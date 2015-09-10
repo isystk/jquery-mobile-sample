@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="format-detection" content="telephone=no">
+<title>JQueryMobile RIAサンプル一覧</title>
+<meta name="robots" content="index,follow,noodp" />
+<meta name="keywords" content="***,***" />
+<meta name="description" content="******" />
+<link rel="stylesheet" href="../js/lib/jquery.mobile/jquery.mobile.css" />
+<link rel="stylesheet" href="../js/lib/jquery.mobile/icon.pack/jqm-icon-pack.css" />
+<link rel="stylesheet" href="../css/style.css" />
+<link rel="stylesheet" href="../css/development.css" />
+<style type="text/css">
+
+</style>
+<script type="text/javascript" src="../js/lib/jsdeferred.js"></script>
+<script type="text/javascript" src="../js/lib/underscore.js"></script>
+<script type="text/javascript" src="../js/lib/jquery.min.js"></script>
+<script type="text/javascript" src="../js/lib/jquery-plugins.min.js"></script>
+<script type="text/javascript" src="../js/lib/jquery.easing.1.3.js"></script>
+<script type="text/javascript" src="../js/mobile.init.js"></script>
+<script type="text/javascript" src="../js/common.js"></script>
+<script type="text/javascript" src="../js/lib/jquery.mobile/jquery.mobile.js"></script>
+<script type="text/javascript">
+
+// DOM Readyの代替
+// ページが最初にロードされた場合、Ajaxにより読み込まれ場合に呼び出される
+$(document).on('pageinit', '#top', function(e) {
+	// ページ表示時に１度だけ実行したいものは、ここに記述します。
+	$(this).one('pageshow', function(e) {
+		var page = $(e.target);
+
+		// 画像バナーのスライドショー
+		$('.BannerSlideBox .displayArea').mynavislider({
+			'easing': 'easeInOutCirc',
+			'shift' : 1,
+			'carousel': true,
+			'autoSlide': true,
+			'slideCallBack': function(data) {
+				$('.Paging li').removeClass('current');
+				$('.Paging .pageNo'+data.pageNo).addClass('current');
+			}
+		});
+
+	});
+});
+
+</script>
+</head>
+<body>
+
+<article data-role="page" id="top">
+<header data-role="header">
+<h1 class="page_heading">JQueryMobile　RIAサンプル</h1>
+</header>
+<section data-role="content" class="contents">
+
+<div class="clearfix BannerSlideBox">
+<div class="displayArea"> 
+<!--最大5バナー表示-->
+<ul class="Banner" class="gpu-use" style="position: relative;">
+  <li><img src="../img/sample_banner02.jpg" alt="バナー" width="550" height="110"></li>
+  <li><img src="../img/sample_banner02.jpg" alt="バナー" width="550" height="110"></li>
+  <li><img src="../img/sample_banner02.jpg" alt="バナー" width="550" height="110"></li>
+  <li><img src="../img/sample_banner02.jpg" alt="バナー" width="550" height="110"></li>
+  <li><img src="../img/sample_banner02.jpg" alt="バナー" width="550" height="110"></li>
+</ul>
+</div>
+<ul class="Paging">
+<li class="current pageNo1"><span>1</span></li>
+<li class="pageNo2"><span>2</span></li>
+<li class="pageNo3"><span>3</span></li>
+<li class="pageNo4"><span>4</span></li>
+<li class="pageNo5"><span>5</span></li>
+</ul>
+<p class="BannerSlideBoxBtnBack"><a href="#" id="gallery-back"><img src="../img/banner_slide_btn_back.jpg" width="23" alt="back"></a></p>
+<p class="BannerSlideBoxBtnNext"><a href="#" id="gallery-next"><img src="../img/banner_slide_btn_next.jpg" alt="left" width="23"></a></p>
+</div>
+    
+<div data-role="controlgroup" >
+	<ul data-filter="false" data-role="listview" data-inset="true">
+		<li data-role="list-divider">メニュー</li>
+		<li><a href="./formInput.html" data-role="button" data-icon="arrow-r" data-iconpos="right">フォーム入力</a></li>
+		<li><a href="./callender.html" data-role="button" data-icon="arrow-r" data-iconpos="right">カレンダー</a></li>
+		<li><a href="./multiCallender.html" data-role="button" data-icon="arrow-r" data-iconpos="right">マルチカレンダー</a></li>
+		<li><a href="./mapGoogle.html" data-role="button" data-icon="arrow-r" data-iconpos="right">地図(Google)</a></li>
+		<li><a href="./photoSlider.html" data-role="button" data-icon="arrow-r" data-iconpos="right">画像スライダー</a></li>
+		<li><a href="./zoomPhotoPanel.html" data-role="button" data-icon="arrow-r" data-iconpos="right">拡大写真パネル</a></li>
+		<li><a href="./photoGallery.html" data-role="button" data-icon="arrow-r" data-iconpos="right">フォトギャラリー</a></li>
+	</ul>
+</div>
+</section>
+<footer data-role="footer" class="globalFooter">
+<p class="pageTop"><a href="#" class="silentScroll">PAGE TOP</a></p>
+<div data-role="navbar">
+<ul>
+<li><a href="http://dev.screw-axis.com/doc/jquery_mobile/" data-icon="arrow-u" target="_blank">APIリファレンス</a></li>
+<li><a href="./info.html" data-icon="info">関連情報</a></li>
+</ul>
+</div>
+</footer>
+
+</article>
+
+</body>
+</html>

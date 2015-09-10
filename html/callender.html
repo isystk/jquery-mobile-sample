@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="format-detection" content="telephone=no">
+<link rel="stylesheet" href="../js/lib/jquery.mobile/jquery.mobile.css" />
+<link rel="stylesheet" href="../js/lib/jquery.mobile/icon.pack/jqm-icon-pack.css" />
+<link rel="stylesheet" href="../js/lib/jquery.mobile/datebox/jqm-datebox.css" />
+<link rel="stylesheet" href="../css/style.css" />
+<link rel="stylesheet" href="../css/development.css" />
+<style type="text/css">
+
+</style>
+<script type="text/javascript" src="../js/lib/jsdeferred.js"></script>
+<script type="text/javascript" src="../js/lib/underscore.js"></script>
+<script type="text/javascript" src="../js/lib/jquery.min.js"></script>
+<script type="text/javascript" src="../js/lib/jquery-plugins.min.js"></script>
+<script type="text/javascript" src="../js/lib/jquery.easing.1.3.js"></script>
+<script type="text/javascript" src="../js/mobile.init.js"></script>
+<script type="text/javascript" src="../js/common.js"></script>
+<script type="text/javascript" src="../js/lib/jquery.mobile/jquery.mobile.js"></script>
+<script type="text/javascript" src="../js/lib/jquery.mobile/datebox/jqm-datebox.core.js"></script>
+<script type="text/javascript" src="../js/lib/jquery.mobile/datebox/jqm-datebox.mode.calbox.js"></script>
+<script type="text/javascript" src="../js/lib/jquery.mobile/datebox/jquery.mobile.datebox.i8n.jp.js"></script>
+<script type="text/javascript">
+// DOM Readyの代替
+// ページが最初にロードされた場合、Ajaxにより読み込まれ場合に呼び出される
+$(document).on('pageinit', '#callender', function(e) {
+	// ページ表示時に１度だけ実行したいものは、ここに記述します。
+	$(this).one('pageshow', function(e) {
+		var page = $(e.target);
+	});
+});
+</script>
+</head>
+<body>
+
+<article data-role="page" id="callender">
+<header data-role="header">
+<h1 class="page_heading">カレンダー</h1>
+<nav class="nav_page">
+	<p class="nav_page-left prev"><a href="#" class="reverse">＜戻る</a></p>
+</nav>
+<div class="ui-btn-right">
+	<ul class="headerNav">
+		<li><a href="javascript:void(0);"  class="showHistoryPanel"><img src="../img/btn_mypage_history.jpg" width="40px" /></a></li>
+		<li><a href="javascript:void(0);"  class="showCommonMenuPanel"><img src="../img/btn_mypage_menu.jpg" width="40px" /></a></li>
+	</ul>
+</div>
+</header>
+<section data-role="content" class="contents">
+<div class="searchBox">
+	<dl>
+		<dt><label for="fromDate">開始</label></dt>
+		<dd>
+			<input type="text" name="fromDate" maxlength="10" data-role="datebox" value="" >
+		</dd>
+		<dt><label for="toDate">終了</label></dt>
+		<dd>
+			<input type="text" name="toDate" maxlength="10" data-role="datebox" data-options='{"defaultValue": [2013, 2, 28]}' value="" >
+		</dd>
+	</dl>
+
+</div>
+</section>
+<footer data-role="footer" class="globalFooter">
+<p class="pageTop"><a href="#" class="silentScroll">PAGE TOP</a></p>
+</footer>
+
+</article>
+
+</body>
+</html>
