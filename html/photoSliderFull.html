@@ -9,12 +9,28 @@
 <link rel="stylesheet" href="../css/style.css" />
 <link rel="stylesheet" href="../css/development.css" />
 <style type="text/css">
+.ui-content {
+    padding: 0px;
+}
+.btnSlideBack {
+    z-index: 10003;
+    position: fixed;
+    top: 50%;
+    margin: 0 auto;
+    left: 0px;
+}
+.btnSlideNext {
+    z-index: 10003;
+    position: fixed;
+    top: 50%;
+    margin: 0 auto;
+    right: 0px;
+}
 </style>
 <script type="text/javascript" src="../js/lib/jsdeferred.js"></script>
 <script type="text/javascript" src="../js/lib/underscore.js"></script>
 <script type="text/javascript" src="../js/lib/jquery.min.js"></script>
 <script type="text/javascript" src="../js/lib/jquery-plugins.min.js"></script>
-<script type="text/javascript" src="../js/lib/plugins/jquery.zoomPhotoPanel.js"></script>
 <script type="text/javascript" src="../js/lib/plugins/jquery.photoSlider.js"></script>
 <script type="text/javascript" src="../js/lib/jquery.easing.1.3.js"></script>
 <script type="text/javascript" src="../js/mobile.init.js"></script>
@@ -24,18 +40,37 @@
 
 // DOM Readyの代替
 // ページが最初にロードされた場合、Ajaxにより読み込まれ場合に呼び出される
-$(document).on('pageinit', '#zoomPhotoPanel', function(e) {
+$(document).on('pageinit', '#photoSlider', function(e) {
 	// ページ表示時に１度だけ実行したいものは、ここに記述します。
 	$(this).one('pageshow', function(e) {
 		var page = $(e.target);
-		// 拡大写真パネル
-		var zoomPhotoPanelFunc = function () {
-			$('.contents').zoomPhotoPanel({'targetClass': '.gallery', 'imageUrl': '../img', 'isFullScreen': true, 'openCallBack': function() {
-		}, 'closeCallBack': function() {
-		}});
+		var showPhotoSlider = function() {
+			// 画像スライダー
+			$('.js-photoSlider').each(function() {
+				var slider = $(this).mynavislider({
+					'shift' : 1,
+					'carousel': false,
+					'parentKey': '.parentKey',
+					'childKey': '.childKey',
+					'backBtnKey': '.btnSlideBack',
+					'nextBtnKey': '.btnSlideNext',
+					'isMouseDrag': true,
+					'isFullScreen': true,
+					'slideCallBack': function(data) {
+						$('.slideControl li').removeClass('active');
+						$('.slideControl .pageNo'+data.pageNo).addClass('active');
+					}
+				});
+				//$(this).bind('swiperight', function(){
+				//	slider.backPage();
+				//});
+				//$(this).bind('swipeleft', function(){
+				//	slider.nextPage();
+				//});
+			});
 		};
-		// 画面遷移時に実行
-		zoomPhotoPanelFunc();
+		// 通常の画面遷移時に実行
+		showPhotoSlider();
 	});
 });
 
@@ -43,9 +78,9 @@ $(document).on('pageinit', '#zoomPhotoPanel', function(e) {
 </head>
 <body>
 
-<article data-role="page" id="zoomPhotoPanel">
+<article data-role="page" id="photoSlider">
 <header data-role="header">
-<h1 class="page_heading">拡大写真パネル</h1>
+<h1 class="page_heading">画像スライダー</h1>
 <nav class="nav_page">
 	<p class="nav_page-left prev"><a href="#" class="reverse">＜戻る</a></p>
 </nav>
@@ -57,30 +92,25 @@ $(document).on('pageinit', '#zoomPhotoPanel', function(e) {
 </div>
 </header>
 <section data-role="content" class="contents">
-
-	<div class="photoSlide">
-		<p class="photo">
-			<a href="javascript:void(0);" class="gallery" >
-				<img src="../img/001.jpg" alt="画像１" width="125px" class="image gallery-photo"/>
-			</a>
-		</p>
+	<div class="js-photoSlider" >
+		<ul class="parentKey">
+			<li class="childKey"><img src="../img/001.jpg" alt="画像１" width="100%" /></li>
+			<li class="childKey"><img src="../img/002.jpg" alt="画像２" width="100%" /></li>
+			<li class="childKey"><img src="../img/003.jpg" alt="画像３" width="100%" /></li>
+			<li class="childKey"><img src="../img/004.jpg" alt="画像４" width="100%" /></li>
+			<li class="childKey"><img src="../img/005.jpg" alt="画像５" width="100%" /></li>
+		</ul>
+		<p class="btnSlideBack"><a href="#"><img src="../img/btn_slide_back.png" width="20" alt="back"></a></p>
+		<p class="btnSlideNext"><a href="#"><img src="../img/btn_slide_next.png" width="20" alt="next"></a></p>
+		<ul class="slideControl">
+			<li class="active pageNo1"><span>・</span></li>
+			<li class="pageNo2"><span>・</span></li>
+			<li class="pageNo3"><span>・</span></li>
+			<li class="pageNo4"><span>・</span></li>
+			<li class="pageNo5"><span>・</span></li>
+		</ul>
 	</div>
-
-	<div class="photoSlide">
-		<p class="photo">
-			<a href="javascript:void(0);" class="gallery" >
-				<img src="../img/002.jpg" alt="画像２" width="125px" class="image gallery-photo"/>
-			</a>
-		</p>
-	</div>
-
-	<div class="photoSlide">
-		<p class="photo">
-			<a href="javascript:void(0);" class="gallery" >
-				<img src="../img/003.jpg" alt="画像３" width="125px" class="image gallery-photo"/>
-			</a>
-		</p>
-	</div>
+</div>
 
 </section>
 <footer data-role="footer" class="globalFooter">
