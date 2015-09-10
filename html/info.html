@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="format-detection" content="telephone=no">
+<link rel="stylesheet" href="../js/lib/jquery.mobile/jquery.mobile.css" />
+<link rel="stylesheet" href="../js/lib/jquery.mobile/icon.pack/jqm-icon-pack.css" />
+<link rel="stylesheet" href="../css/style.css" />
+<link rel="stylesheet" href="../css/development.css" />
+<style type="text/css">
+</style>
+<script type="text/javascript" src="../js/lib/jsdeferred.js"></script>
+<script type="text/javascript" src="../js/lib/underscore.js"></script>
+<script type="text/javascript" src="../js/lib/jquery.min.js"></script>
+<script type="text/javascript" src="../js/lib/jquery-plugins.min.js"></script>
+<script type="text/javascript" src="../js/lib/jquery.easing.1.3.js"></script>
+<script type="text/javascript" src="../js/mobile.init.js"></script>
+<script type="text/javascript" src="../js/common.js"></script>
+<script type="text/javascript" src="../js/lib/jquery.mobile/jquery.mobile.js"></script>
+<script type="text/javascript">
+// DOM Readyの代替
+// ページが最初にロードされた場合、Ajaxにより読み込まれ場合に呼び出される
+$(document).on('pageinit', '#info', function(e) {
+	// ページ表示時に１度だけ実行したいものは、ここに記述します。
+	$(this).one('pageshow', function(e) {
+		var page = $(e.target);
+	});
+});
+</script>
+</head>
+<body>
+
+<article data-role="page" id="info">
+<header data-role="header">
+<h1 class="page_heading">関連情報</h1>
+<nav class="nav_page">
+	<p class="nav_page-left prev"><a href="#" class="reverse">＜戻る</a></p>
+</nav>
+<div class="ui-btn-right">
+	<ul class="headerNav">
+		<li><a href="javascript:void(0);"  class="showHistoryPanel"><img src="../img/btn_mypage_history.jpg" width="40px" /></a></li>
+		<li><a href="javascript:void(0);"  class="showCommonMenuPanel"><img src="../img/btn_mypage_menu.jpg" width="40px" /></a></li>
+	</ul>
+</div>
+</header>
+<section data-role="content" class="contents">
+<ul data-role="listview" data-inset="true" data-driver-theme="e">
+	<li data-role="list-driver">
+		デザイン
+		<span class="ui-li-count">3</span>
+	</li>
+	<li><a href="http://jquerymobile.com/themeroller/">
+			<h1>ThemeRoller</h1>
+			<p>オリジナルのテーマを作成できるオンラインツール</p>
+		</a>
+	</li>
+	<li><a href="http://www.jqmgallery.com/">
+			<h1>jQuery Mobile Gallery</h1>
+			<p>JQueryMobileを利用したスマートフォンサイトギャラリー</p>
+		</a>
+	</li>
+	<li><a href="https://github.com/commadelimited/jQuery-Mobile-Icon-Pack/">
+			<h1>JQuery Mobile Icon Pack</h1>
+			<p>JQueryMobile用のスマートフォンにマッチしたシンプルなアイコン集</p>
+		</a>
+	</li>
+	<li data-role="list-driver">
+		パフォーマンス
+		<span class="ui-li-count">1</span>
+	</li>
+	<li><a href="http://jquerymobile.com/download-builder/">
+			<h1>jQuery Mobile Download Builder</h1>
+			<p>JQueryMobileの利用部分のみを抽出し、軽量なカスタムビルドを生成する。</p>
+		</a>
+	</li>
+	<li data-role="list-driver">
+		プラグイン
+		<span class="ui-li-count">1</span>
+	</li>
+	<li><a href="http://jquerymobile.com/resources/">
+			<h1>3rd party plugins</h1>
+			<p>サードパーティー製プラグイン</p>
+		</a>
+	</li>
+
+
+</ul>
+</section>
+<footer data-role="footer" class="globalFooter">
+<p class="pageTop"><a href="#" class="silentScroll">PAGE TOP</a></p>
+</footer>
+
+</article>
+
+</body>
+</html>

@@ -1,0 +1,41 @@
+@charset "utf-8";
+
+/*** Myapp CSS Document *************************************
+
+	development.css
+	開発チーム用スタイルシート
+
+----------------------------------------------------------------***/
+
+.display-none {
+	display: none;
+}
+
+.display-block {
+	display: block;
+}
+
+.display-inline {
+	display: inline;
+}
+
+.position-relative {
+	position: relative;
+}
+
+.position-absolute {
+	position: absolute;
+}
+
+/* Androidでタップ時のオレンジの枠（ハイライト）を消す */
+a {
+-webkit-tap-highlight-color: rgba(0,0,0,0);
+}
+
+/* iOSでGPUアクセラレータを有効にする */
+.use-gpu {
+-webkit-transform:translate3d(0,0,0);
+}
+
+
+

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="format-detection" content="telephone=no">
+<link rel="stylesheet" href="../js/lib/jquery.mobile/jquery.mobile.css" />
+<link rel="stylesheet" href="../js/lib/jquery.mobile/icon.pack/jqm-icon-pack.css" />
+<link rel="stylesheet" href="../css/style.css" />
+<link rel="stylesheet" href="../css/development.css" />
+<style type="text/css">
+.ui-content {
+    padding: 0px;
+}
+.btnSlideBack {
+    z-index: 10003;
+    position: fixed;
+    top: 50%;
+    margin: 0 auto;
+    left: 0px;
+}
+.btnSlideNext {
+    z-index: 10003;
+    position: fixed;
+    top: 50%;
+    margin: 0 auto;
+    right: 0px;
+}
+</style>
+<script type="text/javascript" src="../js/lib/jsdeferred.js"></script>
+<script type="text/javascript" src="../js/lib/underscore.js"></script>
+<script type="text/javascript" src="../js/lib/jquery.min.js"></script>
+<script type="text/javascript" src="../js/lib/jquery-plugins.min.js"></script>
+<script type="text/javascript" src="../js/lib/plugins/jquery.photoSlider.js"></script>
+<script type="text/javascript" src="../js/lib/jquery.easing.1.3.js"></script>
+<script type="text/javascript" src="../js/mobile.init.js"></script>
+<script type="text/javascript" src="../js/common.js"></script>
+<script type="text/javascript" src="../js/lib/jquery.mobile/jquery.mobile.js"></script>
+<script type="text/javascript">
+
+// DOM Readyの代替
+// ページが最初にロードされた場合、Ajaxにより読み込まれ場合に呼び出される
+$(document).on('pageinit', '#photoSlider', function(e) {
+	// ページ表示時に１度だけ実行したいものは、ここに記述します。
+	$(this).one('pageshow', function(e) {
+		var page = $(e.target);
+		var showPhotoSlider = function() {
+			// 画像スライダー
+			$('.js-photoSlider').each(function() {
+				var slider = $(this).mynavislider({
+					'shift' : 1,
+					'carousel': false,
+					'parentKey': '.parentKey',
+					'childKey': '.childKey',
+					'backBtnKey': '.btnSlideBack',
+					'nextBtnKey': '.btnSlideNext',
+					'isMouseDrag': true,
+					'isFullScreen': true,
+					'slideCallBack': function(data) {
+						$('.slideControl li').removeClass('active');
+						$('.slideControl .pageNo'+data.pageNo).addClass('active');
+					}
+				});
+				//$(this).bind('swiperight', function(){
+				//	slider.backPage();
+				//});
+				//$(this).bind('swipeleft', function(){
+				//	slider.nextPage();
+				//});
+			});
+		};
+		// 通常の画面遷移時に実行
+		showPhotoSlider();
+	});
+});
+
+</script>
+</head>
+<body>
+
+<article data-role="page" id="photoSlider">
+<header data-role="header">
+<h1 class="page_heading">画像スライダー</h1>
+<nav class="nav_page">
+	<p class="nav_page-left prev"><a href="#" class="reverse">＜戻る</a></p>
+</nav>
+<div class="ui-btn-right">
+	<ul class="headerNav">
+		<li><a href="javascript:void(0);"  class="showHistoryPanel"><img src="../img/btn_mypage_history.jpg" width="40px" /></a></li>
+		<li><a href="javascript:void(0);"  class="showCommonMenuPanel"><img src="../img/btn_mypage_menu.jpg" width="40px" /></a></li>
+	</ul>
+</div>
+</header>
+<section data-role="content" class="contents">
+	<div class="js-photoSlider" >
+		<ul class="parentKey">
+			<li class="childKey"><img src="../img/001.jpg" alt="画像１" width="100%" /></li>
+			<li class="childKey"><img src="../img/002.jpg" alt="画像２" width="100%" /></li>
+			<li class="childKey"><img src="../img/003.jpg" alt="画像３" width="100%" /></li>
+			<li class="childKey"><img src="../img/004.jpg" alt="画像４" width="100%" /></li>
+			<li class="childKey"><img src="../img/005.jpg" alt="画像５" width="100%" /></li>
+		</ul>
+		<p class="btnSlideBack"><a href="#"><img src="../img/btn_slide_back.png" width="20" alt="back"></a></p>
+		<p class="btnSlideNext"><a href="#"><img src="../img/btn_slide_next.png" width="20" alt="next"></a></p>
+		<ul class="slideControl">
+			<li class="active pageNo1"><span>・</span></li>
+			<li class="pageNo2"><span>・</span></li>
+			<li class="pageNo3"><span>・</span></li>
+			<li class="pageNo4"><span>・</span></li>
+			<li class="pageNo5"><span>・</span></li>
+		</ul>
+	</div>
+</div>
+
+</section>
+<footer data-role="footer" class="globalFooter">
+<p class="pageTop"><a href="#" class="silentScroll">PAGE TOP</a></p>
+</footer>
+
+</article>
+
+</body>
+</html>

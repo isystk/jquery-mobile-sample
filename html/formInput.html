@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="format-detection" content="telephone=no">
+<link rel="stylesheet" href="../js/lib/jquery.mobile/jquery.mobile.css" />
+<link rel="stylesheet" href="../js/lib/jquery.mobile/icon.pack/jqm-icon-pack.css" />
+<link rel="stylesheet" href="../css/style.css" />
+<link rel="stylesheet" href="../css/development.css" />
+<style type="text/css">
+</style>
+<script type="text/javascript" src="../js/lib/jsdeferred.js"></script>
+<script type="text/javascript" src="../js/lib/underscore.js"></script>
+<script type="text/javascript" src="../js/lib/jquery.min.js"></script>
+<script type="text/javascript" src="../js/lib/jquery-plugins.min.js"></script>
+<script type="text/javascript" src="../js/lib/jquery.easing.1.3.js"></script>
+<script type="text/javascript" src="../js/mobile.init.js"></script>
+<script type="text/javascript" src="../js/common.js"></script>
+<script type="text/javascript" src="../js/lib/jquery.mobile/jquery.mobile.js"></script>
+<script type="text/javascript">
+
+// DOM Readyの代替
+// ページが最初にロードされた場合、Ajaxにより読み込まれ場合に呼び出される
+$(document).on('pageinit', '#formInput', function(e) {
+	// ページ表示時に１度だけ実行したいものは、ここに記述します。
+	$(this).one('pageshow', function(e) {
+		var page = $(e.target);
+
+		// チェックボックス選択時にマークを付ける
+		$(document).delegate('.checkMark', 'vclick', function(event) {  
+			event.preventDefault();
+			event.stopPropagation();
+			var self = $(this),
+				label = self.find('label');
+			label.toggleClass('selectedLabel');
+		});
+
+		// ラジオボタン選択時にマークを付ける
+		$(document).delegate('.radioMark', 'vclick', function(event) {  
+			event.preventDefault();
+			event.stopPropagation();
+			var self = $(this),
+				labels = self.parents('div:first').find('.radioMark');
+			labels.each(function () {
+				$(this).find('label').removeClass('selectedLabel');
+			});
+			self.find('label').toggleClass('selectedLabel');
+		});
+
+	});
+});
+
+</script>
+</head>
+<body>
+<article data-role="page" id="formInput" class="page">
+<header data-role="header">
+<h1 class="page_heading">フォーム入力</h1>
+<nav class="nav_page">
+	<p class="nav_page-left prev"><a href="#" class="reverse">＜戻る</a></p>
+</nav>
+<div class="ui-btn-right">
+	<ul class="headerNav">
+		<li><a href="javascript:void(0);"  class="showHistoryPanel"><img src="../img/btn_mypage_history.jpg" width="40px" /></a></li>
+		<li><a href="javascript:void(0);"  class="showCommonMenuPanel"><img src="../img/btn_mypage_menu.jpg" width="40px" /></a></li>
+	</ul>
+</div>
+</header>
+<section data-role="content" class="contents">
+	<div id="main">
+		<p class="formConfirmText">下記のフォームに予約必要事項を入力してください。</p>
+		<form action="" method="post">
+		<div data-enhance="false">
+			<div class="formSection">
+				<label class="formTitle error">お名前<span>※必須</span></label>
+				<p class="errortxt">
+				</p>
+				<dl>
+					<dt><label for="familyName">姓</label></dt>
+					<dd><input type="text" name="familyName" maxlength="20" placeholder="例）山田" value="" id="familyName" class="formTextbox"></dd>
+					<dt><label for="name">名</label></dt>
+					<dd><input type="text" name="name" maxlength="20" placeholder="例）太郎" value="" id="name" class="formTextbox"></dd>
+				</dl>
+			</div>
+			<div class="formSection">
+				<label class="formTitle">お名前（フリガナ）<span>※必須</span></label>
+				<p class="errortxt">
+				</p>
+				<dl>
+					<dt><label for="familyNameKana">セイ</label></dt>
+					<dd><input type="text" name="familyNameKana" maxlength="20" placeholder="例）ヤマダ" value="" id="familyNameKana" class="formTextbox"></dd>
+					<dt><label for="nameKana">メイ</label></dt>
+					<dd><input type="text" name="nameKana" maxlength="20" placeholder="例）タロウ" value="" id="nameKana" class="formTextbox"></dd>
+				</dl>
+			</div>
+			<div class="formSection">
+				<label for="zip" class="formTitle">郵便番号<span>※必須</span></label>
+				<p class="errortxt">
+				</p>
+				<input type="text" name="zip" maxlength="10" placeholder="例）123-4567" value="" id="zip" class="formTextbox">
+			</div>
+			<div class="formSection">
+				<label for="prefecture" class="formTitle">都道府県<span>※必須</span></label>
+				<p class="errortxt">
+				</p>
+				<div data-enchance="false">
+				<span class="selectBox">
+			        <select name="prefectureId" id="prefectureId"><option value="" selected="selected">----</option>
+			                <option value="1">北海道</option>
+			                <option value="2">青森県</option>
+			                <option value="3">岩手県</option>
+			                <option value="4">宮城県</option>
+			                <option value="5">秋田県</option>
+			                <option value="6">山形県</option>
+			                <option value="7">福島県</option>
+			                <option value="8">茨城県</option>
+			                <option value="9">栃木県</option>
+			                <option value="10">群馬県</option>
+			                <option value="11">埼玉県</option>
+			                <option value="12">千葉県</option>
+			                <option value="13">東京都</option>
+			                <option value="14">神奈川県</option>
+			                <option value="15">山梨県</option>
+			                <option value="16">新潟県</option>
+			                <option value="17">富山県</option>
+			                <option value="18">石川県</option>
+			                <option value="19">福井県</option>
+			                <option value="20">長野県</option>
+			                <option value="21">岐阜県</option>
+			                <option value="22">静岡県</option>
+			                <option value="23">愛知県</option>
+			                <option value="24">三重県</option>
+			                <option value="25">滋賀県</option>
+			                <option value="26">京都府</option>
+			                <option value="27">大阪府</option>
+			                <option value="28">兵庫県</option>
+			                <option value="29">奈良県</option>
+			                <option value="30">和歌山県</option>
+			                <option value="31">鳥取県</option>
+			                <option value="32">島根県</option>
+			                <option value="33">岡山県</option>
+			                <option value="34">広島県</option>
+			                <option value="35">山口県</option>
+			                <option value="36">徳島県</option>
+			                <option value="37">香川県</option>
+			                <option value="38">愛媛県</option>
+			                <option value="39">高知県</option>
+			                <option value="40">福岡県</option>
+			                <option value="41">佐賀県</option>
+			                <option value="42">長崎県</option>
+			                <option value="43">熊本県</option>
+			                <option value="44">大分県</option>
+			                <option value="45">宮崎県</option>
+			                <option value="46">鹿児島県</option>
+			                <option value="47">沖縄県</option></select>
+				</span>
+				</div>
+			</div>
+			<div class="formSection">
+				<label for="area" class="formTitle">市区町村<span>※必須</span></label>
+				<p class="errortxt">
+				</p>
+				<input type="text" name="area" maxlength="100" value="" id="area" class="formTextbox">
+			</div>
+			<div class="formSection">
+				<label for="address" class="formTitle">町名番地<span>※必須</span></label>
+				<p class="errortxt">
+				</p>
+				<input type="text" name="address" maxlength="100" value="" id="address" class="formTextbox">
+			</div>
+			<div class="formSection">
+				<label for="building" class="formTitle">建物名</label>
+				<p class="errortxt">
+				</p>
+				<input type="text" name="building" maxlength="100" value="" id="building" class="formTextbox">
+			</div>
+			<div class="formSection">
+				<label for="mail" class="formTitle">メールアドレス<span>※必須</span></label>
+				<p class="errortxt">
+				</p>
+				<input type="email" name="mail" maxlength="256" placeholder="例） mail@example.com" value="" id="mail" class="formTextbox">
+			</div>
+			<div class="formSection">
+				<label for="tel" class="formTitle">電話番号</label>
+				<p class="errortxt">
+				</p>
+				<input type="text" name="tel" placeholder="例）090-1234-5678" pattern="^[0-9\-]*$" value="" id="tel" class="formTextbox" errorStyleClass="formTextbox error" maxlength="13"/>
+			</div>
+			<div class="formSection">
+				<fieldset>
+					<label class="formTitle">性別</label>
+					<p class="errortxt">
+					</p>
+					<div class="formRadioGroup">
+						<span class="radioMark">
+							<input type="radio" name="sex" value="2" checked="checked" id="sex2" class="formRadio">
+							<label for="sex2" class="radioLabel">女</label>
+						</span>
+						<span class="radioMark">
+							<input type="radio" name="sex" value="1" id="sex1" class="formRadio">
+							<label for="sex1" class="radioLabel">男</label>
+						</span>
+			 		</div>
+			 	</fieldset>
+			</div>
+			<div class="formSection">
+				<label for="birthday" class="formTitle">生年月日</label>
+				<p class="errortxt">
+				</p>
+				<input type="text" name="birthday" pattern="[0-9]*" value="" id="birthday" class="formTextbox" errorStyleClass="formTextbox error" maxlength="8"/>
+				<p class="formCaption">記入例：1980年1月1日生まれの場合 → 19800101</p>
+			</div>
+			<div class="formSection">
+				<label for="workLocation" class="formTitle">勤務地</label>
+				<p class="errortxt">
+				</p>
+				<input type="text" name="workLocation" maxlength="100" placeholder="例）東京都" value="" id="workLocation" class="formTextbox">
+			</div>
+			<div class="formSection">
+				<label class="formTitle">相手のお名前</label>
+				<p class="errortxt">
+				</p>
+				<dl>
+					<dt><label for="partnerFamilyName">姓</label></dt>
+					<dd><input type="text" name="partnerFamilyName" maxlength="20" placeholder="例）山田" value="" id="partnerFamilyName" class="formTextbox"></dd>
+					<dt><label for="partnerName">名</label></dt>
+					<dd><input type="text" name="partnerName" maxlength="20" placeholder="例）太郎" value="" id="partnerName" class="formTextbox"></dd>
+				</dl>
+			</div>
+			<div class="formSection">
+				<label class="formTitle">相手のお名前（フリガナ）</label>
+				<p class="errortxt">
+				</p>
+				<dl>
+					<dt><label for="partnerFamilyNameKana">セイ</label></dt>
+					<dd><input type="text" name="partnerFamilyNameKana" maxlength="20" placeholder="例）ヤマダ" value="" id="partnerFamilyNameKana" class="formTextbox"></dd>
+					<dt><label for="partnerNameKana">メイ</label></dt>
+					<dd><input type="text" name="partnerNameKana" maxlength="20" placeholder="例）タロウ" value="" id="partnerNameKana" class="formTextbox"></dd>
+				</dl>
+			</div>
+			<div class="formSection">
+				<label for="ceremonyDateText" class="formTitle">挙式予定日</label>
+				<p class="errortxt">
+				</p>
+				<input type="text" name="ceremonyDateText" maxlength="100" value="" id="ceremonyDateText" class="formTextbox">
+				<span class="checkMark">
+				<input type="checkbox" name="ceremonyDateUnfixFlg" value="on" id="ceremonyDateUnfixFlg" class="formCheckbox">
+				<label for="ceremonyDateUnfixFlg" class="checkboxLabel">未定</label>
+				</span>
+				<p class="formCaption">記入例：6月中、クリスマス前後、12/02</p>
+			</div>
+			<div class="formSection">
+				<label for="number" class="formTitle">挙式人数</label>
+				<p class="errortxt">
+				</p>
+				<span class="selectBox">
+					<select name="ceremonyCnt"><option value="" selected="selected">----</option>
+						<option value="2">20名以下</option>
+						<option value="3">30名</option>
+						<option value="4">40名</option>
+						<option value="5">50名</option>
+						<option value="6">60名</option>
+						<option value="7">70名</option>
+						<option value="8">80名</option>
+						<option value="9">90名</option>
+						<option value="10">100名</option>
+						<option value="11">110名</option>
+						<option value="12">120名</option>
+						<option value="13">130名</option>
+						<option value="14">140名</option>
+						<option value="15">150名以上</option>
+					</select>
+				</span>
+			</div>
+			<div class="formSection">
+				<label for="price" class="formTitle">挙式予算</label>
+				<p class="errortxt">
+				</p>
+				<span class="selectBox">
+					<select name="ceremonyPrice"><option value="" >----</option>
+						<option value="0">未定</option>
+						<option value="2">50万円以下</option>
+						<option value="3">100万円</option>
+						<option value="4">150万円</option>
+						<option value="5">200万円</option>
+						<option value="6">250万円</option>
+						<option value="7">300万円</option>
+						<option value="8">350万円</option>
+						<option value="9">400万円</option>
+						<option value="10">450万円</option>
+						<option value="11">500万円以上</option>
+					</select>
+				</span>
+			</div>
+			<div class="formSection">
+				<fieldset>
+					<label class="formTitle">ご希望の挙式スタイル</label>
+					<p class="errortxt">
+					</p>
+					<div class="formRadioGroup">
+						<span class="checkMark">
+						<input type="checkbox" name="ceremonyStyleList" value="1" id="ceremonyStyleList1" class="formCheckbox">
+						<label for="ceremonyStyleList1" class="checkboxLabel">教会式（チャペル式）</label>
+						</span>
+						<span class="checkMark">
+						<input type="checkbox" name="ceremonyStyleList" value="2" id="ceremonyStyleList2" class="formCheckbox">
+						<label for="ceremonyStyleList2" class="checkboxLabel">人前式</label>
+						</span>
+						<span class="checkMark">
+						<input type="checkbox" name="ceremonyStyleList" value="3" id="ceremonyStyleList3" class="formCheckbox">
+						<label for="ceremonyStyleList3" class="checkboxLabel">神前式</label>
+						</span>
+						<span class="checkMark">
+						<input type="checkbox" name="ceremonyStyleList" value="4" id="ceremonyStyleList4" class="formCheckbox">
+						<label for="ceremonyStyleList4" class="checkboxLabel">仏前式</label>
+						</span>
+					</div>
+				</fieldset>
+			</div>
+			<ul class="listBtn">
+				<li class="mt00">
+					<a href="#" id="confirm" class="btnEntry">確認画面へ</a>
+				</li>
+			</ul>
+		</div>
+		</form>
+	</div>
+</section>
+<footer data-role="footer" class="globalFooter">
+<p class="pageTop"><a href="#" class="silentScroll">PAGE TOP</a></p>
+</footer>
+</article>
+</body>
+</html>

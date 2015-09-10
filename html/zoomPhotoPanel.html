@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="format-detection" content="telephone=no">
+<link rel="stylesheet" href="../js/lib/jquery.mobile/jquery.mobile.css" />
+<link rel="stylesheet" href="../js/lib/jquery.mobile/icon.pack/jqm-icon-pack.css" />
+<link rel="stylesheet" href="../css/style.css" />
+<link rel="stylesheet" href="../css/development.css" />
+<style type="text/css">
+</style>
+<script type="text/javascript" src="../js/lib/jsdeferred.js"></script>
+<script type="text/javascript" src="../js/lib/underscore.js"></script>
+<script type="text/javascript" src="../js/lib/jquery.min.js"></script>
+<script type="text/javascript" src="../js/lib/jquery-plugins.min.js"></script>
+<script type="text/javascript" src="../js/lib/plugins/jquery.zoomPhotoPanel.js"></script>
+<script type="text/javascript" src="../js/lib/plugins/jquery.photoSlider.js"></script>
+<script type="text/javascript" src="../js/lib/jquery.easing.1.3.js"></script>
+<script type="text/javascript" src="../js/mobile.init.js"></script>
+<script type="text/javascript" src="../js/common.js"></script>
+<script type="text/javascript" src="../js/lib/jquery.mobile/jquery.mobile.js"></script>
+<script type="text/javascript">
+
+// DOM Readyの代替
+// ページが最初にロードされた場合、Ajaxにより読み込まれ場合に呼び出される
+$(document).on('pageinit', '#zoomPhotoPanel', function(e) {
+	// ページ表示時に１度だけ実行したいものは、ここに記述します。
+	$(this).one('pageshow', function(e) {
+		var page = $(e.target);
+		// 拡大写真パネル
+		var zoomPhotoPanelFunc = function () {
+			$('.contents').zoomPhotoPanel({'targetClass': '.gallery', 'imageUrl': '../img', 'isFullScreen': true, 'openCallBack': function() {
+		}, 'closeCallBack': function() {
+		}});
+		};
+		// 画面遷移時に実行
+		zoomPhotoPanelFunc();
+	});
+});
+
+</script>
+</head>
+<body>
+
+<article data-role="page" id="zoomPhotoPanel">
+<header data-role="header">
+<h1 class="page_heading">拡大写真パネル</h1>
+<nav class="nav_page">
+	<p class="nav_page-left prev"><a href="#" class="reverse">＜戻る</a></p>
+</nav>
+<div class="ui-btn-right">
+	<ul class="headerNav">
+		<li><a href="javascript:void(0);"  class="showHistoryPanel"><img src="../img/btn_mypage_history.jpg" width="40px" /></a></li>
+		<li><a href="javascript:void(0);"  class="showCommonMenuPanel"><img src="../img/btn_mypage_menu.jpg" width="40px" /></a></li>
+	</ul>
+</div>
+</header>
+<section data-role="content" class="contents">
+
+	<div class="photoSlide">
+		<p class="photo">
+			<a href="javascript:void(0);" class="gallery" >
+				<img src="../img/001.jpg" alt="画像１" width="125px" class="image gallery-photo"/>
+			</a>
+		</p>
+	</div>
+
+	<div class="photoSlide">
+		<p class="photo">
+			<a href="javascript:void(0);" class="gallery" >
+				<img src="../img/002.jpg" alt="画像２" width="125px" class="image gallery-photo"/>
+			</a>
+		</p>
+	</div>
+
+	<div class="photoSlide">
+		<p class="photo">
+			<a href="javascript:void(0);" class="gallery" >
+				<img src="../img/003.jpg" alt="画像３" width="125px" class="image gallery-photo"/>
+			</a>
+		</p>
+	</div>
+
+</section>
+<footer data-role="footer" class="globalFooter">
+<p class="pageTop"><a href="#" class="silentScroll">PAGE TOP</a></p>
+</footer>
+
+</article>
+
+</body>
+</html>
