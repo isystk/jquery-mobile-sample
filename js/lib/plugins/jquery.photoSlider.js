@@ -101,6 +101,9 @@
 			}
 
 			bindEvent();
+			
+			// スライダーを設定したよっていうマークを付ける。
+			screen.addClass('slider-set-end');
 		};
 		
 		var bindEvent = function() {
@@ -151,7 +154,7 @@
 
 				nowLoading = false;
 				dragw = 0;
-
+				
 				// コールバック
 				slideCallBack();
 			};
@@ -336,7 +339,6 @@
 			ul.bind({
 				// タッチの開始、マウスボタンを押したとき
 				'touchstart mousedown': function(e) {
-
 					if (nowLoading) {
 						event.preventDefault();
 						event.stopPropagation();
@@ -353,6 +355,9 @@
 					this.pageX= ((isTouch && event.changedTouches) ? event.changedTouches[0].pageX : e.pageX);
 					this.pageY= ((isTouch && event.changedTouches) ? event.changedTouches[0].pageY : e.pageY);
 					this.left = parseInt($(this).css('left'));
+					if(isNaN(this.left)) {
+						this.left = $(this).position().left;
+					}
 					this.startLeft = this.left;
 
 					this.touched = true;
@@ -367,7 +372,7 @@
 					var x = (this.pageX - ((isTouch && event.changedTouches) ? event.changedTouches[0].pageX : e.pageX));
 					var y = (this.pageY - ((isTouch && event.changedTouches) ? event.changedTouches[0].pageY : e.pageY));
 
-					if (Math.abs(x) < 5 || 20 < Math.abs(y)) {
+					if (Math.abs(x) < 5 || 200 < Math.abs(y)) {
 						// スワイプさせない
 						return;
 					} else {
@@ -528,22 +533,32 @@
 				bindEvent();
 
 				// リサイズ時は、コールバックは呼ばない。
+				var workPageNo = pageNo;
 				var workSlideCallBackFunc = slideCallBackFunc;
 				slideCallBackFunc = null;
-				changePage(1);
+				pageNo = 1;
+				changePage(workPageNo);
 				slideCallBackFunc = workSlideCallBackFunc;
 
 				if (resizeCallBackFunc) {
-					resizeCallBackFunc();
+					var data = {};
+					data.pageNo = pageNo;
+					data.maxPageNo = maxPageNo;
+					if (carousel) {
+						data.obj = $(li[pos]);
+					} else {
+						data.obj = $(li[(pos-shift)]);
+					}
+					resizeCallBackFunc(data);
 				}
 			};
 			// 画面が回転された場合
-			$(window).on('orientationchange',function(){
+			$(this).on('orientationchange',function(){
 				unbindSlider();
 				createSlider();
 			});
 			// 画面がリサイズされた場合
-			$(window).resize(function() {
+			$(this).resize(function() {
 				unbindSlider();
 				createSlider();
 			});
@@ -636,12 +651,11 @@
 		,	'autoSlideInterval':  5000 // 自動スライドさせる間隔(ミリ秒)
 		,	'hoverPause':  false // 子要素にマウスオーバーすると自動スライドを一時停止する。
 		,	'isMouseDrag': false // スワイプでのページングを可能にするかどうか
-		,	'reboundw': 20 // スワイプ時に跳ね返りを行う幅
+		,	'reboundw': 50 // スワイプ時に跳ね返りを行う幅
 		,	'isFullScreen': false // １ページ分をフルスクリーンで表示するかどうか
 		,	'slideCallBack': null // スライド後に処理を行うコールバック(本プラグインで想定していない処理はここでカスタマイズする)
 		,	'resizeCallBack': null // 画面リサイズ後に処理を行うコールバック
 	};
 
 })(jQuery);
-
 
