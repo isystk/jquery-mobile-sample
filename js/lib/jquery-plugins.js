@@ -1627,6 +1627,7 @@ $.compact = function(object) {
 	
 })(jQuery);
 
+
 (function($){
 	/*
 	 * zoomPhotoPanel
@@ -1658,9 +1659,10 @@ $.compact = function(object) {
 			hoverPause = null,
 			slideCallBack = null,
 			openCallBack = null,
-			closeCallBack = null,
 			isFullScreen = null,
-			showClip = false;
+			showClip = false,
+			sendGa = false,
+			defaultScrollTop = 0;
 
 		var className = "zoomPhotoPanel";
 		
@@ -1681,9 +1683,9 @@ $.compact = function(object) {
 				hoverPause = params.hoverPause,
 				slideCallBack = params.slideCallBack,
 				openCallBack = params.openCallBack,
-				closeCallBack = params.closeCallBack,
 				isFullScreen = params.isFullScreen,
 				showClip = params.showClip,
+				sendGa = params.sendGa,
 				galabel = params.galabel;
 
 			var mynavigallery = $('.' + className);
@@ -1705,13 +1707,17 @@ $.compact = function(object) {
 					var target = $(this),
 						image = target.find('img'),
 						imageId = target.data('imageid') || '',
+						weddingId = target.data('weddingid') || '',
 						imagePath = image.attr('osrc') || image.attr('src') || '',
-						caption = image.attr('alt') || '';
+						caption = image.attr('alt') || '',
+						title = target.data('title') || '';
 
 					var data = {
 						imageId : imageId,
 						imagePath : imagePath,
-						caption : caption
+						caption : caption,
+						weddingId : weddingId,
+						title : title
 					};
 
 					// テンプレートに渡すため配列に格納
@@ -1725,25 +1731,25 @@ $.compact = function(object) {
 				var template = '';
 				if (isFullScreen) {
 					template = [
-									'<div class="photo_enlargeArea portfolio display-none" style="position:absolute;background-color:transparent;">',
-										'<div class="js-photoSlider">',
+									'<div class="photo_enlargeArea portfolio display-none" >',
+										'<div class="js-photoSlider" style="overflow:hidden;margin 0 auto;">',
 											'<div class="parentKey photo_enlarge_imageArea">',
 											'<% _.each(photos, function(data, i) { %> ',
 												'<div class="childKey" style="text-align: center;">',
-														'<img src="<%=data.imagePath%>" itemprop="image" alt="<%=data.caption%>" data-imageid="<%=data.imageId%>" width="100%">',
+														'<img src="' + imageUrl + '/img_nowloading_sd.jpg" alt="<%=data.caption%>" data-imageurl="<%=data.imagePath%>" data-imageid="<%=data.imageId%>" data-weddingid="<%=data.weddingId%>" data-title="<%=data.title%>" width="100%">',
 												'</div>',
 											'<% }); %>',
 											'</div>',
 										'</div>',
-										'<div class="photo_enlarge_partsArea transitionArea" style="">',
-											'<ul class="transitionList clearfix" style="position: fixed;">',
-												'<li class="item prev js-backBtn"><a href="#" class="trigger"></a></li>',
-												'<li class="item next js-nextBtn"><a href="#" class="trigger"></a></li>',
-											'</ul>',
-											'<div class="closeArea">',
-												'<p class="closeBtn" style="position: fixed;"><a href="#" class="layerclose"><img src="' + imageUrl + '/btn_delete.png" alt="削除" width="20" height="20"></a></p>',
+										'<div class="photo_enlarge_partsArea">',
+											'<div class="transitionArea transitionList">',
+												'<p class="item prev js-backBtn"><a href="#" class="trigger"></a></p>',
+												'<p class="item next js-nextBtn"><a href="#" class="trigger"></a></p>',
 											'</div>',
-											'<div class="commentArea" style="position: fixed;">',
+											'<div class="closeArea">',
+												'<p class="closeBtn"><a href="#" class="layerclose"><img src="' + imageUrl + '/btn_delete.png" alt="削除" width="20" height="20"></a></p>',
+											'</div>',
+											'<div class="commentArea">',
 												'<p class="comment"><span></span><a href="#" class="btnClip display-none">この画像を<br>クリップする</a></p>',
 												'<p class="count"></p>',
 											'</div>',
@@ -1785,7 +1791,7 @@ $.compact = function(object) {
 				panel.attr('id', 'zoomPhotoPanel'+ index); 
 				panel.addClass(className);
 				
-				$('body').append(panel);
+				$('.page').append(panel);
 			}
 
 			// イベントバンドル
@@ -1813,6 +1819,45 @@ $.compact = function(object) {
 						}).show();
 					}
 
+					var imagePosition = function () {
+						var photos = slider.find('.childKey img');
+
+						// 画像上下に余白を追加する。
+						var replacePhotoArea = function(img, photo) {
+							var x = Math.floor(img[0].height * $(window).width() / img[0].width);
+							var margin = Math.floor(($(window).height() - x) / 2);
+							if (0 < margin) {
+								photo.closest('.childKey').css('margin-top', margin + 'px');
+							} else {
+								photo.closest('.childKey').css('margin-top', '0px');
+							}
+						}
+
+						// オリジナル画像に変換する。
+						photos.each(function() {
+							var photo = $(this);
+							var loadImage = new (function() {
+								var imagePath = photo.data('imageurl');
+								if (0 <= imagePath.indexOf('_')) {
+									imagePath = imagePath.split("_")[0] + '.jpg';
+								}
+								photo.attr('src', imagePath);
+								
+								var img = $('<img>');
+								img
+									.load(function() {
+										replacePhotoArea(img, photo);
+									});
+								this.exec = function() {
+									img.attr('src', imagePath);
+								}
+							})();
+							
+							loadImage.exec();
+						});
+						
+					}
+
 					// 画像スライダーを設定する
 					slider = panel.find('.js-photoSlider').mynavislider({
 						'parentKey': '.parentKey'
@@ -1838,55 +1883,57 @@ $.compact = function(object) {
 							panel.find('.btnClip')
 								.data('imageid', targetImage.data('imageid'));
 							
+//							if (window.innerHeight < targetImage.height()) {
+//								onScroll();
+//							} else {
+//								offScroll();
+//							}
+//							
+//							// 初期表示時のスクロール位置に戻す。
+//							$(window).scrollTop(defaultScrollTop);
+							
+							// GA送信処理
+							if(sendGa){
+								var displayLi = $('#zoomPhotoPanel'+ index).find('.childKey');
+								if (1 < displayLi.length) {
+									displayLi = displayLi.filter('.childKey:eq(' + (data.pageNo) + ')' );
+								}
+								var displayImage = displayLi.find('img'),
+									imageUrl = displayImage.data('imageurl'),
+									weddingId = displayImage.data('weddingid'),
+									label = displayImage.data('title');
+
+								$.mynaviClickableImage(weddingId, imageUrl, label);
+							}
+
 							if (slideCallBack) {
 								slideCallBack(data);
 							}
-						}, 'resizeCallBack': imagePosition
+						}, 'resizeCallBack': function (data) {
+							
+							imagePosition();
+
+//							var targetImage = data.obj.find('img');
+//
+//							if ($('#jquery-mLightBox-overlay').is(':visible')) {
+//								if (targetImage.height() == 0) {
+//								} else if (window.innerHeight < targetImage.height()) {
+//									onScroll();
+//								} else {
+//									offScroll();
+//								}
+//							}
+
+							panel.css('width', $(window).width() + 'px');
+							panel.css('height', $(window).height() + 'px');
+							
+//							// 初期表示時のスクロール位置を保持しておく。
+//							defaultScrollTop = $(window).scrollTop();
+						}
 					});
 
-					function imagePosition() {
-						var photos = slider.find('.childKey img');
-
-						var replacePhotoArea = function(img, photo) {
-
-							var x = Math.floor(img[0].height * $(window).width() / img[0].width);
-							var margin = Math.floor(($(window).height() - x) / 2);
-							if (0 < margin) {
-								photo.closest('.childKey').css('margin-top', margin + 'px');
-							} else {
-								photo.closest('.childKey').css('margin-top', '0px');
-							}
-
-						}
-				
-						photos.each(function() {
-							var photo = $(this);
-							
-							var loadImage = new (function() {
-								// オリジナル画像に変換する。
-								var imagePath = photo.attr('src');
-								if (0 <= imagePath.indexOf('_')) {
-									imagePath = imagePath.split("_")[0] + '.jpg';
-								}
-								photo.attr('src', imagePath);
-								
-								var img = $('<img>');
-								img
-									.load(function() {
-										replacePhotoArea(img, photo);
-									});
-								this.exec = function() {
-									img.attr('src', imagePath);
-								}
-							})();
-							
-							loadImage.exec();
-								
-						});
-						
-					}
 					imagePosition();
-					
+
 				} else {
 					// 画像スライダーを設定する
 					slider = panel.find('.js-photoSlider').mynavislider({
@@ -1940,7 +1987,6 @@ $.compact = function(object) {
 					});
 				}
 
-
 				// 対象画像クリック時に拡大写真パネルを表示する
 				screen.find(targetClass).each(function(i) {
 					var target = $(this),
@@ -1956,34 +2002,55 @@ $.compact = function(object) {
 				panel.find('.layerclose').click(function(e) {
 					e.preventDefault();
 					$.mLightBox.close();
-					if (closeCallBack) {
-						closeCallBack();
-					}
+					// フッタを戻す。
+					Mynavi.showFooterNavBar();
+//					onScroll();
+				});
+			};
+
+			// 画面スクロールを有効にする
+			var onScroll = function() {
+				$(window).off('.noScroll');
+			};
+
+			// 画面スクロールを無効にする
+			var offScroll = function() {
+				$(window).on('touchmove.noScroll', function(e) {
+				    e.preventDefault();
 				});
 			};
 
 			// 指定したページを表示します。
 			var showPage = obj.showPage = function(pageNo) {
 				var pageNo = pageNo || 1;
+
+				// 初期表示時のスクロール位置を保持しておく。
+				defaultScrollTop = $(window).scrollTop();
+				
 				slider.changePage(pageNo);
+				
 				$.mLightBox({'mLightBoxId': '#zoomPhotoPanel' + index, duration: 300,
 					opacity: 1,
+					addScroll: false,
 					callback: function() {
 						var page = $('.page');
 
 						// フッタを一旦消す
 						page.find('.footerNavBar').hide();
+
+						slider.changePage(pageNo);
 						
 						if (openCallBack) {
 							openCallBack();
 						}
 					},
 					closecallback: function() {
-						if (closeCallBack) {
-							closeCallBack();
-						}
+						// フッタを戻す。
+						Mynavi.showFooterNavBar();
+//						onScroll();
 					}
 				});
+				
 			};
 
 			make(index);
@@ -2021,9 +2088,9 @@ $.compact = function(object) {
 		, 'hoverPause':  false // 子要素にマウスオーバーすると自動スライドを一時停止する。
 		, 'slideCallBack': null // スライド後に処理を行うコールバック(本プラグインで想定していない処理はここでカスタマイズする)
 		, 'openCallBack': null // 拡大表示後のコールバック
-		, 'closeCallBack': null // 拡大パネルを閉じた時のコールバック
-		, 'isFullScreen': false // フルスクリーンで表示する
+		,'isFullScreen': false // フルスクリーンで表示する
 		, 'showClip': false // 画像クリップ機能を表示する
+		, 'sendGa': false // 画像クリップ機能を表示する
 		, 'galabel': '' // 画像クリップ時のGAイベントラベル値
 	};
 
