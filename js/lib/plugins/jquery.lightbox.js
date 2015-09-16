@@ -1,4 +1,3 @@
-
 (function($){
 	/*
 	 * mLightBox
@@ -34,6 +33,7 @@
 			closecallback: function(){},
 			inBoxOpacity: 1,
 			opacity: 0.4,
+			addScroll: true, // スクロールした移動量を表示位置に加算するかどうか
 			inBoxEffect: function(){this.show();}
 		},
 	
@@ -199,13 +199,16 @@
 	
 	function __elemOffset(element) {
 
-		var top = Math.floor($(window).scrollTop() + ($(window).height() - $(element).height()) / 2);
+		var scrollTop = (options.addScroll) ? $(window).scrollTop() : 0;
+		var scrollLeft = (options.addScroll) ? $(window).scrollLeft() : 0;
+		
+		var top = Math.floor(scrollTop + ($(window).height() - $(element).height()) / 2);
 		if ($(window).height() < $(element).height()) {
-			top = Math.floor($(window).scrollTop());
+			top = scrollTop;
 		}
-		var left = Math.floor($(window).scrollLeft() + ($(window).width() - $(element).width()) / 2);
+		var left = Math.floor(scrollLeft + ($(window).width() - $(element).width()) / 2);
 		if ($(window).width() < $(element).width()) {
-			left = Math.floor($(window).scrollLeft());
+			left = scrollLeft;
 		}
 		
 		return {
@@ -234,3 +237,4 @@
 	}
 
 })(jQuery);
+
