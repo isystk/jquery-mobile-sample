@@ -335,9 +335,6 @@
 				panel.find('.layerclose').click(function(e) {
 					e.preventDefault();
 					$.mLightBox.close();
-					// フッタを戻す。
-					Mynavi.showFooterNavBar();
-//					onScroll();
 				});
 			};
 
@@ -374,9 +371,6 @@
 						}
 					},
 					closecallback: function() {
-						// フッタを戻す。
-						Mynavi.showFooterNavBar();
-//							onScroll();
 					}
 				};
 				
