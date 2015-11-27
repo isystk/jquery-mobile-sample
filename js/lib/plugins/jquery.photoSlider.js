@@ -8,7 +8,6 @@
 	 *
 	 * Sample:
 	 * var slide1 = $('#slide1 .screen').mynavislider({
-	 * 	'easing': 'easeInOutCirc',
 	 * 	'carousel': false,
 	 * 	'backBtnKey': '#slide1 #gallery-back',
 	 * 	'nextBtnKey': '#slide1 #gallery-next',
@@ -42,7 +41,6 @@
 			,	shiftw = 0
 			,	animateType = null
 			,	slideSpeed = null
-			,	easing = null
 			,	carousel = null
 			,	slideCallBackFunc = null
 			,	resizeCallBackFunc = null
@@ -52,6 +50,7 @@
 			,	isMouseDrag = null
 			,	reboundw = null
 			,	isFullScreen = false
+			,	heightMaxScreen = false
 			,	isSlideCallBack = null;
 
 		var params = $.extend({}, $.fn.mynavislider.defaults, options);
@@ -72,18 +71,44 @@
 			isMouseDrag = params.isMouseDrag;
 			reboundw = params.reboundw;
 			slideSpeed = params.slideSpeed;
-			easing = params.easing;
 			shift = params.shift;
 			margin = params.margin;
 			carousel = params.carousel;
 			isFullScreen = params.isFullScreen;
+			heightMaxScreen = params.heightMaxScreen;
 			slideCallBackFunc = params.slideCallBack;
 			resizeCallBackFunc = params.resizeCallBack;
 
+			if (heightMaxScreen) {
+				// 画像縦幅を端末サイズに合わせる為オリジナル画像サイズが必要になる。画像を事前にロードしておく。
+				var photos = ul.find(childKey).find('img');
+				var photoLength = photos.length;
+				photos.each(function() {
+					var photo = $(this),
+						imagePath = photo.attr('src') || '';
+					var img = $('<img>');
+					img
+						.load(function() {
+							photo.data('owidth', img[0].width);
+							photo.data('oheight', img[0].height);
+							if (photoLength !== 1) {
+								photoLength--;
+								return;
+							}
+							photos.unbind('load');
+							// 画像のロードが完了したらスタート
+							exec();
+						});
+					img.attr('src', imagePath);
+				});
+			} else {
+				exec();
+			}
+			
+		};
+		
+		var exec = function() {
 			if (isFullScreen) {
-				ul.find(childKey).width(Math.ceil($(window).width() /dispCount) - Math.ceil(margin/dispCount));
-				liwidth = ul.find(childKey).width();
-				shiftw = (liwidth + margin) * shift;
 				fullScreen();
 			} else if (params.shiftw) {
 				liwidth = Math.ceil(params.shiftw/shift);
@@ -210,46 +235,34 @@
 				}
 				after();
 			} else if (animateType === ANIMATE_TYPE.SLIDE) {
-				if (!isMouseDrag) {
-					// jQueryを利用したアニメーション
-					ul.animate(
-						{ left: to}
-					,	slideSpeed
-					,	easing
-					,	function() {
-							after();
-						}
-					);
-				} else {
-					// jQueryを利用しないアニメーション(Androidでアニメーションが重いため)
-					(function() {
-						var self = this;
+				// jQueryを利用しないアニメーション(Androidでアニメーションが重いため)
+				(function() {
+					var self = this;
 
-						var elem = ul[0];
-						var begin = +new Date();
-						var duration = slideSpeed;
-						var easing = function(time, duration) {
-							return -(time /= duration) * (time - 2);
-						};
-						var timer = setInterval(function() {
-							var time = new Date() - begin;
-							var _pos, _now;
-							if (time > duration) {
-								clearInterval(timer);
-								_now = to;
-								elem.style.left = _now + 'px';
-
-								after();
-								return;
-							}
-							else {
-								_pos = easing(time, duration);
-								_now = _pos * (to - from) + from;
-							}
+					var elem = ul[0];
+					var begin = +new Date();
+					var duration = slideSpeed;
+					var easing = function(time, duration) {
+						return -(time /= duration) * (time - 2);
+					};
+					var timer = setInterval(function() {
+						var time = new Date() - begin;
+						var _pos, _now;
+						if (time > duration) {
+							clearInterval(timer);
+							_now = to;
 							elem.style.left = _now + 'px';
-						}, 10);
-					})();
-				}
+
+							after();
+							return;
+						}
+						else {
+							_pos = easing(time, duration);
+							_now = _pos * (to - from) + from;
+						}
+						elem.style.left = _now + 'px';
+					}, 10);
+				})();
 			} else if (animateType === ANIMATE_TYPE.FADE) {
 				ul.animate({'opacity': 0 }, 300, function() {
 					if (1 < maxPageNo && carousel) {
@@ -528,18 +541,30 @@
 				
 				// 子要素の横幅を端末のwidthに設定
 				ul.find(childKey).width(Math.ceil($(window).width() /dispCount) - Math.ceil(margin/dispCount));
+				
+				if (heightMaxScreen) {
+					ul.find(childKey).height($(window).height());
+					ul.find(childKey).each(function() {
+						var li = $(this),
+							img = li.find('img');
+
+						var x = Math.floor(img.data('oheight') * $(window).width() / img.data('owidth'));
+						var margin = Math.floor(($(window).height() - x) / 2);
+						if (0 <= margin) {
+							img.height('').width('100%');
+						} else {
+							img.height('100%').width('');
+						}
+						
+						img.attr('osize', img.data('owidth') + 'x' + img.data('oheight'));
+					});
+				}
+				
 				liwidth = ul.find(childKey).width();
 				shiftw = (liwidth + margin) * shift;
-				bindEvent();
 
-				// リサイズ時は、コールバックは呼ばない。
-				var workPageNo = pageNo;
-				var workSlideCallBackFunc = slideCallBackFunc;
-				slideCallBackFunc = null;
-				pageNo = 1;
-				changePage(workPageNo);
-				slideCallBackFunc = workSlideCallBackFunc;
-
+			};
+			var resizeCallBack = function() {
 				if (resizeCallBackFunc) {
 					var data = {};
 					data.pageNo = pageNo;
@@ -556,12 +581,35 @@
 			$(this).on('orientationchange',function(){
 				unbindSlider();
 				createSlider();
+				bindEvent();
+
+				// リサイズ時は、コールバックは呼ばない。
+				var workPageNo = pageNo;
+				var workSlideCallBackFunc = slideCallBackFunc;
+				slideCallBackFunc = null;
+				pageNo = 1;
+				changePage(workPageNo);
+				slideCallBackFunc = workSlideCallBackFunc;
+
+				resizeCallBack();
 			});
 			// 画面がリサイズされた場合
 			$(this).resize(function() {
 				unbindSlider();
 				createSlider();
+				bindEvent();
+
+				// リサイズ時は、コールバックは呼ばない。
+				var workPageNo = pageNo;
+				var workSlideCallBackFunc = slideCallBackFunc;
+				slideCallBackFunc = null;
+				pageNo = 1;
+				changePage(workPageNo);
+				slideCallBackFunc = workSlideCallBackFunc;
+
+				resizeCallBack();
 			});
+			createSlider();
 		};
 
 		// コールバック
@@ -618,6 +666,13 @@
 			slide(page, animateType);
 		}
 
+		// スライドコールバックで次ページ要素をAjax取得してLIに追加した場合などに、最大ページなどの情報をリフレッシュする。
+		var refresh = this.refresh = function () {
+			li = ul.find(params.childKey);
+			maxPageNo = Math.ceil(li.size()/shift);
+			showArrows();
+		};
+
 		// 処理開始
 		$(this).each(function() {
 			init(this);
@@ -643,7 +698,6 @@
 		,	'shiftw': null // １ページでにスライドさせる幅(子要素にmarginなどの余白が指定されている場合に、自動で幅が算出できないためこれを指定する。)
 		,	'animateType': ANIMATE_TYPE.SLIDE // アニメーションの種類
 		,	'slideSpeed': 300 // スライド速度
-		,	'easing': 'easeInOutCirc' // スライドアニメーションの種類
 		,	'carousel': false // ローテートさせるかどうか
 		,	'backBtnKey': '#gallery-back' // 次ページボタン
 		,	'nextBtnKey': '#gallery-next' // 前ページボタン
@@ -652,10 +706,10 @@
 		,	'hoverPause':  false // 子要素にマウスオーバーすると自動スライドを一時停止する。
 		,	'isMouseDrag': false // スワイプでのページングを可能にするかどうか
 		,	'reboundw': 50 // スワイプ時に跳ね返りを行う幅
-		,	'isFullScreen': false // １ページ分をフルスクリーンで表示するかどうか
+		,	'isFullScreen': false // 端末の画面いっぱいに画像を表示する
+		,	'heightMaxScreen': false // 画像縦幅が端末縦幅よりも大きい場合は端末縦幅いっぱいに表示する（isFullScreen がtrueの場合のみ有効）
 		,	'slideCallBack': null // スライド後に処理を行うコールバック(本プラグインで想定していない処理はここでカスタマイズする)
 		,	'resizeCallBack': null // 画面リサイズ後に処理を行うコールバック
 	};
 
 })(jQuery);
-

@@ -83,9 +83,15 @@
 						caption = image.attr('alt') || '',
 						title = target.data('title') || '';
 
+					var originalPath = imagePath;
+					if (0 <= imagePath.indexOf('_')) {
+						originalPath = imagePath.split("_")[0] + '.jpg';
+					}
+
 					var data = {
 						imageId : imageId,
 						imagePath : imagePath,
+						originalPath : originalPath,
 						caption : caption,
 						weddingId : weddingId,
 						title : title
@@ -107,7 +113,7 @@
 											'<div class="parentKey photo_enlarge_imageArea">',
 											'<% _.each(photos, function(data, i) { %> ',
 												'<div class="childKey" style="text-align: center;">',
-														'<img src="' + imageUrl + '/img_nowloading_sd.jpg" alt="<%=data.caption%>" data-imageurl="<%=data.imagePath%>" data-imageid="<%=data.imageId%>" data-weddingid="<%=data.weddingId%>" data-title="<%=data.title%>" width="100%">',
+														'<img src="<%=data.originalPath%>" alt="<%=data.caption%>" data-imageurl="<%=data.imagePath%>" data-imageid="<%=data.imageId%>" data-weddingid="<%=data.weddingId%>" data-title="<%=data.title%>" >',
 												'</div>',
 											'<% }); %>',
 											'</div>',
@@ -120,9 +126,9 @@
 											'<div class="closeArea">',
 												'<p class="closeBtn"><a href="#" class="layerclose"><img src="' + imageUrl + '/btn_delete.png" alt="削除" width="20" height="20"></a></p>',
 											'</div>',
-											'<div class="commentArea">',
+											'<div class="commentArea" style="position: absolute;">',
 												'<p class="comment"><span></span><a href="#" class="btnClip display-none">この画像を<br>クリップする</a></p>',
-												'<p class="count"></p>',
+												'<p class="count" style="bottom: 10px;position: absolute;width: 100%;"></p>',
 											'</div>',
 										'</div>',
 									'</div>'].join('');
@@ -162,7 +168,7 @@
 				panel.attr('id', 'zoomPhotoPanel'+ index); 
 				panel.addClass(className);
 				
-				$('.page').append(panel);
+				$('body').append(panel);
 			}
 
 			// イベントバンドル
@@ -190,43 +196,19 @@
 						}).show();
 					}
 
-					var imagePosition = function () {
-						var photos = slider.find('.childKey img');
-
-						// 画像上下に余白を追加する。
-						var replacePhotoArea = function(img, photo) {
-							var x = Math.floor(img[0].height * $(window).width() / img[0].width);
+					// 画像上下に余白を追加する。
+					var appendMarginTop = function() {
+						// オリジナル画像に変換する。
+						slider.find('.childKey img').each(function() {
+							var photo = $(this);
+							var x = Math.floor(photo[0].height * $(window).width() / photo[0].width);
 							var margin = Math.floor(($(window).height() - x) / 2);
 							if (0 < margin) {
 								photo.closest('.childKey').css('margin-top', margin + 'px');
 							} else {
 								photo.closest('.childKey').css('margin-top', '0px');
 							}
-						}
-
-						// オリジナル画像に変換する。
-						photos.each(function() {
-							var photo = $(this);
-							var loadImage = new (function() {
-								var imagePath = photo.data('imageurl');
-								if (0 <= imagePath.indexOf('_')) {
-									imagePath = imagePath.split("_")[0] + '.jpg';
-								}
-								photo.attr('src', imagePath);
-								
-								var img = $('<img>');
-								img
-									.load(function() {
-										replacePhotoArea(img, photo);
-									});
-								this.exec = function() {
-									img.attr('src', imagePath);
-								}
-							})();
-							
-							loadImage.exec();
 						});
-						
 					}
 
 					// 画像スライダーを設定する
@@ -236,6 +218,7 @@
 						, 'shift': 1
 						,'isMouseDrag': true
 						,'isFullScreen': true
+						,'heightMaxScreen': true
 						, 'backBtnKey': panel.find('.js-backBtn')
 						, 'nextBtnKey': panel.find('.js-nextBtn')
 						, 'animateType': sliderAnimateType
@@ -246,23 +229,17 @@
 						, 'autoSlideInterval': autoSlideInterval
 						, 'hoverPause': hoverPause
 						, 'slideCallBack': function(data) {
-							
-							var targetImage = data.obj.find('img');
 
+							// 画像上下に余白を追加する。
+							appendMarginTop();
+
+							// コメントエリアの表示更新
+							var targetImage = data.obj.find('img');
 							panel.find('.commentArea .comment>span').text(targetImage.attr('alt') || '');
-							panel.find('.commentArea .count').text(data.pageNo + '枚目／' + data.maxPageNo + '枚中');
+							panel.find('.commentArea .count').text(data.pageNo + '／' + data.maxPageNo + '');
 							panel.find('.btnClip')
 								.data('imageid', targetImage.data('imageid'));
-							
-//							if (window.innerHeight < targetImage.height()) {
-//								onScroll();
-//							} else {
-//								offScroll();
-//							}
-//							
-//							// 初期表示時のスクロール位置に戻す。
-//							$(window).scrollTop(defaultScrollTop);
-							
+
 							// GA送信処理
 							if(sendGa){
 								var displayLi = $('#zoomPhotoPanel'+ index).find('.childKey');
@@ -270,7 +247,7 @@
 									displayLi = displayLi.filter('.childKey:eq(' + (data.pageNo) + ')' );
 								}
 								var displayImage = displayLi.find('img'),
-									imageUrl = displayImage.data('imageurl'),
+									imageUrl = displayImage.data('imageurl') || '',
 									weddingId = displayImage.data('weddingid'),
 									label = displayImage.data('title');
 
@@ -281,30 +258,16 @@
 								slideCallBack(data);
 							}
 						}, 'resizeCallBack': function (data) {
-							
-							imagePosition();
 
-//							var targetImage = data.obj.find('img');
-//
-//							if ($('#jquery-mLightBox-overlay').is(':visible')) {
-//								if (targetImage.height() == 0) {
-//								} else if (window.innerHeight < targetImage.height()) {
-//									onScroll();
-//								} else {
-//									offScroll();
-//								}
-//							}
+							// 画像上下に余白を追加する。
+							appendMarginTop();
 
-							panel.css('width', $(window).width() + 'px');
-							panel.css('height', $(window).height() + 'px');
-							
-//							// 初期表示時のスクロール位置を保持しておく。
-//							defaultScrollTop = $(window).scrollTop();
+							panel.css('height', $(window).height() + 'px').css('width', $(window).width() + 'px');
+							$('#jquery-mLightBox-overlay').css('height', $(document).height() + 'px').css('width', $(window).width() + 'px');
+
 						}
 					});
-
-					imagePosition();
-
+					
 				} else {
 					// 画像スライダーを設定する
 					slider = panel.find('.js-photoSlider').mynavislider({
@@ -336,7 +299,6 @@
 									photo.css('max-height', height);
 									panel.find('.photoSlideViewId').css('height', height + 20);
 									
-									$.mLightBox.changeLayer();
 								}
 
 								if (slideCallBack) {
@@ -399,18 +361,14 @@
 				defaultScrollTop = $(window).scrollTop();
 				
 				slider.changePage(pageNo);
-				
-				$.mLightBox({'mLightBoxId': '#zoomPhotoPanel' + index, duration: 300,
-					opacity: 1,
-					addScroll: false,
+
+				var options = {'mLightBoxId': '#zoomPhotoPanel' + index, duration: 300,
 					callback: function() {
 						var page = $('.page');
 
 						// フッタを一旦消す
 						page.find('.footerNavBar').hide();
 
-						slider.changePage(pageNo);
-						
 						if (openCallBack) {
 							openCallBack();
 						}
@@ -418,9 +376,15 @@
 					closecallback: function() {
 						// フッタを戻す。
 						Mynavi.showFooterNavBar();
-//						onScroll();
+//							onScroll();
 					}
-				});
+				};
+				
+				if (isFullScreen) {
+					options.opacity = 1;
+					options.addScroll = false;
+				}
+				$.mLightBox(options);
 				
 			};
 
