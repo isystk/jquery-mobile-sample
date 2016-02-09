@@ -684,6 +684,7 @@ $.compact = function(object) {
 
 })(jQuery);
 
+
 (function($) {
 	/*
 	 * mynavislider *
@@ -775,8 +776,8 @@ $.compact = function(object) {
 					var img = $('<img>');
 					img
 						.load(function() {
-							photo.data('owidth', img[0].width);
-							photo.data('oheight', img[0].height);
+							photo.attr('owidth', img[0].width);
+							photo.attr('oheight', img[0].height);
 							if (photoLength !== 1) {
 								photoLength--;
 								return;
@@ -1071,6 +1072,21 @@ $.compact = function(object) {
 					var x = (this.pageX - ((isTouch && event.changedTouches) ? event.changedTouches[0].pageX : e.pageX));
 					var y = (this.pageY - ((isTouch && event.changedTouches) ? event.changedTouches[0].pageY : e.pageY));
 
+					if (!carousel) {
+						// １ページ目は右にスワイプさせない。
+						if (pageNo <= 1 && x < 0) {
+							nowLoading = false;
+							this.touched = false;
+							return;
+						}
+						// 最後のページは左にスワイプさせない。
+						if (maxPageNo <= pageNo && 0 < x) {
+							nowLoading = false;
+							this.touched = false;
+							return;
+						}
+					}
+					
 					if (Math.abs(x) < 5 || 200 < Math.abs(y)) {
 						// スワイプさせない
 						return;
@@ -1140,16 +1156,24 @@ $.compact = function(object) {
 						if ((Math.abs(dragw) < reboundw) || (!carousel && ((pageNo <= 1 && dragw < 0) || (maxPageNo <= pageNo && 0 < dragw)))) {
 							rebound(this);
 						} else {
+							var p = pageNo - Math.ceil(Math.abs(dragw)/shiftw);
+							if (!carousel && p <= 1) {
+								p = 1;
+							}
 							// 前ページ
-							slide(pageNo-1, ANIMATE_TYPE.SLIDE);
+							slide(p, ANIMATE_TYPE.SLIDE);
 						}
 					} else if (0 < dragw) {
 						// 一定幅以上スワイプしていない場合は、跳ね返り処理を行う。
 						if ((Math.abs(dragw) < reboundw) || (!carousel && ((pageNo <= 1 && dragw < 0) || (maxPageNo <= pageNo && 0 < dragw)))) {
 							rebound(this);
 						} else {
+							var p = pageNo + Math.ceil(Math.abs(dragw)/shiftw);
+							if (!carousel && maxPageNo <= p) {
+								p = maxPageNo;
+							}
 							// 次ページ
-							slide(pageNo+1, ANIMATE_TYPE.SLIDE);
+							slide(p, ANIMATE_TYPE.SLIDE);
 						}
 					} else {
 						// 何もしない
@@ -1234,7 +1258,7 @@ $.compact = function(object) {
 						var li = $(this),
 							img = li.find('img');
 
-						var x = Math.floor(img.data('oheight') * $(window).width() / img.data('owidth'));
+						var x = Math.floor(img.attr('oheight') * $(window).width() / img.attr('owidth'));
 						var margin = Math.floor(($(window).height() - x) / 2);
 						if (0 <= margin) {
 							img.height('').width('100%');
@@ -1242,7 +1266,6 @@ $.compact = function(object) {
 							img.height('100%').width('');
 						}
 						
-						img.attr('osize', img.data('owidth') + 'x' + img.data('oheight'));
 					});
 				}
 				
@@ -1392,13 +1415,15 @@ $.compact = function(object) {
 		,	'hoverPause':  false // 子要素にマウスオーバーすると自動スライドを一時停止する。
 		,	'isMouseDrag': false // スワイプでのページングを可能にするかどうか
 		,	'reboundw': 50 // スワイプ時に跳ね返りを行う幅
-		,	'isFullScreen': false // 端末の画面いっぱいに画像を表示する
+		,	'isFullScreen': false // 端末の画面横幅いっぱいに画像を表示する
 		,	'heightMaxScreen': false // 画像縦幅が端末縦幅よりも大きい場合は端末縦幅いっぱいに表示する（isFullScreen がtrueの場合のみ有効）
 		,	'slideCallBack': null // スライド後に処理を行うコールバック(本プラグインで想定していない処理はここでカスタマイズする)
 		,	'resizeCallBack': null // 画面リサイズ後に処理を行うコールバック
 	};
 
 })(jQuery);
+
+
 /*
  * slideMenu
  *
