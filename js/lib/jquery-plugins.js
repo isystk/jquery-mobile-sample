@@ -1073,21 +1073,6 @@ $.compact = function(object) {
 					var x = (this.pageX - ((isTouch && event.changedTouches) ? event.changedTouches[0].pageX : e.pageX));
 					var y = (this.pageY - ((isTouch && event.changedTouches) ? event.changedTouches[0].pageY : e.pageY));
 
-					if (!carousel) {
-						// １ページ目は右にスワイプさせない。
-						if (pageNo <= 1 && x < 0) {
-							nowLoading = false;
-							this.touched = false;
-							return;
-						}
-						// 最後のページは左にスワイプさせない。
-						if (maxPageNo <= pageNo && 0 < x) {
-							nowLoading = false;
-							this.touched = false;
-							return;
-						}
-					}
-					
 					if (Math.abs(x) < 5 || 200 < Math.abs(y)) {
 						// スワイプさせない
 						return;
@@ -1096,9 +1081,21 @@ $.compact = function(object) {
 						event.preventDefault();
 						event.stopPropagation();
 					}
+					
+					if (!carousel) {
+						// １ページ目は右にスワイプさせない。
+						if (0 < (this.left - x)) {
+							return;
+						}
+						// 最後のページは左にスワイプさせない
+						if ((this.left - x) <= -1 * ((maxPageNo-1) * shiftw)) {
+							return;
+						}
+					}
+
 					// 移動先の位置を取得する
 					this.left = this.left - x;
-
+					
 					// 画像を移動させる
 					$(this).css({left:this.left});
 
