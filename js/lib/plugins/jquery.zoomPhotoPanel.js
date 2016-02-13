@@ -225,6 +225,7 @@
 						, 'slideSpeed': slideSpeed
 						, 'easing': easing
 						, 'carousel': carousel
+						, 'moment': true
 						, 'autoSlide': autoSlide
 						, 'autoSlideInterval': autoSlideInterval
 						, 'hoverPause': hoverPause
