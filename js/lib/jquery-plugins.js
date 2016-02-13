@@ -182,242 +182,241 @@
         return null;
     };
 })(jQuery);
-
 (function($){
-	/*
-	 * mLightBox
-	 *
-	 * Copyright (c) 2010 hisasann at teamLab
-	 *
-	 * Require Library:
-	 * 　jquery.js 1.3.2
-	 *
-	 * Options:
-	 * 　mLightBoxId - LightBoxとして表示させたい要素ID
-	 * 　duration - LightBoxの表示速度
-	 * 　easing - LightBoxのeasingタイプ
-	 * 　zIndex - LightBoxのz-index値
-	 * 　callback - コールバック関数を指定してください、型はfunctionです
-	 * 　
-	 * Description:
-	 * 　マイナビバイト用の簡易的なLightBox機能を提供します
-	 * 　
-	 * Browser:
-	 *  Windows - IE6.0, IE7.0, IE8.0, Firefox3.5, Safari3.1, Opera9.6
-	 *  Mac - Firefox3.5, Safari5, Opera9.6
-	 *
-	 */
-	
-	var options = {
-			mLightBoxId: null,
-			duration: null,
-			easing: null,
-			zIndex: null,
-			callback: function(){},
-			resizebeforeback: function(){},
-			closecallback: function(){},
-			inBoxOpacity: 1,
-			opacity: 0.4,
-			inBoxEffect: function(){this.show();}
-		},
-	
-		// default z-index
-		DEFAULT_ZINDEX = 1000,
-	
-		// default duration
-		DEFAULT_DURATION = 100,
-	
-		// default easing type
-		DEFAULT_EASING = "swing",
-	
-		// overlay element id
-		overlayId = "jquery-mLightBox-overlay"
-	
-		;
-	
-	$.mLightBox = function(opts){
-		$.extend(options, opts);
-		$.ui.mLightBox(this, options);
-	}
-	
-	$.ui = $.ui || {};
-	
-	$.ui.mLightBox = function(container, options){
-		_hideSelectBox();
-	
-		var winDimension = ___getPageSize();
-	
-		// overlay
-		var overlay = $("<div>")
-			.attr("id", overlayId)
-			.css({
-				position: "absolute", top: "0px", left: "0px",
-				backgroundColor: "#000000", opacity: "0",
-				width: winDimension.pageWidth + "px", height: winDimension.pageHeight + "px",
-				zIndex: options.zIndex || DEFAULT_ZINDEX
-			})
-			.click(function(){
-				close(options.closecallback);
-			})
-			.appendTo("body")
-			.animate({opacity: options.opacity}, {
-				duration: options.duration || DEFAULT_DURATION,
-				easing: options.easing || DEFAULT_EASING
-			});
-	
-		// mLightBox
-		var mLightBox = $(options.mLightBoxId);
-	
-		animation(mLightBox, __elemOffset(mLightBox));
-	
-		__winResize(overlay, mLightBox);
-	}
-	
-	$.mLightBox.changeLayer = function(opts){
-		$(options.mLightBoxId).hide();
-		$.extend(options, opts);
-	
-		// mLightBox
-		var mLightBox = $(options.mLightBoxId);
-	
-		animation(mLightBox, __elemOffset(mLightBox));
-	
-		__winResize($(overlayId), mLightBox);
-	}
-	
-	$.mLightBox.close = function(fn) {
-		close(fn);
-	}
-	
-	function close(fn){
-		// overlay
-		$("#" + overlayId)
-			.animate({
-				opacity: 0
-			}, {
-				duration: options.duration || DEFAULT_DURATION,
-				easing: options.easing || DEFAULT_EASING,
-				complete: function(){
-					_showSelectBox();
-					$(this).remove();
-			}
-		});
-	
-		// mLightBox
-		$(options.mLightBoxId)
-			.animate({ opacity: 0 }, {
-				duration: options.duration || DEFAULT_DURATION,
-				easing: options.easing || DEFAULT_EASING,
-				complete: function(){
-					$(this).hide();
-					(fn || function(){}).apply(this, arguments);
-			}
-		});
-	}
-	
-	function __winResize(overlay, mLightBox) {
-		$(window).resize(function(){
-			options.resizebeforeback();
-	
-			// overlay
-			var winDimension = ___getPageSize();
-			overlay.css({width: winDimension.pageWidth + "px", height: winDimension.pageHeight + "px"});
-	
-			// mLightBox
-			var offset = __elemOffset(mLightBox);
-			mLightBox.css({top: offset.top, left: offset.left});
-		});
-	}
-	
-	// LigithBox animate!!
-	function animation(element, offset) {
-		element
-			.css({
-				opacity: options.inBoxOpacity,
-				left: offset.left + "px", top: offset.top,
-				zIndex: (options.zIndex || DEFAULT_ZINDEX) + 1 });
-		options.inBoxEffect.apply(element, arguments);
-		element
-			.animate({ opacity: 1}, {
-				duration: options.duration || DEFAULT_DURATION,
-				easing: options.easing || DEFAULT_EASING,
-				complete: function(){
-					options.callback.apply(this, arguments);
-					$(this).find("input:first").focus();
-				}
-			});
-	}
-	
-	/**
-	 * getPageSize() by hisasann.com
-	 *
-	 */
-	function ___getPageSize() {
-		// スクロール領域を含むwidth
-		var pageWidth  = 0;
-		if ($.browser.safari) {
-			pageWidth = document.body.scrollWidth;
-		} else {
-			pageWidth = document.documentElement.scrollWidth;
-		}
-	
-		// スクロール領域を含むheight
-		var pageHeight = 0;
-		if ($.browser.safari) {
-			pageHeight = document.body.scrollHeight;
-		} else {
-			pageHeight = document.documentElement.scrollHeight;
-		}
-	
-		// 画面に表示されている領域のwidth
-		var windowWidth = window.innerWidth || (document.documentElement && document.documentElement.clientWidth) || document.body.clientWidth;
-	
-		// 画面に表示されている領域のheight
-		var windowHeight = window.innerHeight || (document.documentElement && document.documentElement.clientHeight) || document.body.clientHeight;
-	
-		return {
-			pageWidth: pageWidth, pageHeight: pageHeight,
-			winWidth: windowWidth, winHeight: windowHeight
-		};
-	}
-	
-	function __elemOffset(element) {
+/*
+ * mLightBox
+ *
+ * Copyright (c) 2010 hisasann at teamLab
+ *
+ * Require Library:
+ * 　jquery.js 1.3.2
+ *
+ * Options:
+ * 　mLightBoxId - LightBoxとして表示させたい要素ID
+ * 　duration - LightBoxの表示速度
+ * 　easing - LightBoxのeasingタイプ
+ * 　zIndex - LightBoxのz-index値
+ * 　callback - コールバック関数を指定してください、型はfunctionです
+ * 　
+ * Description:
+ * 　マイナビバイト用の簡易的なLightBox機能を提供します
+ * 　
+ * Browser:
+ *  Windows - IE6.0, IE7.0, IE8.0, Firefox3.5, Safari3.1, Opera9.6
+ *  Mac - Firefox3.5, Safari5, Opera9.6
+ *
+ */
 
-		var top = Math.floor($(window).scrollTop() + ($(window).height() - $(element).height()) / 2);
-		if ($(window).height() < $(element).height()) {
-			top = Math.floor($(window).scrollTop());
+var options = {
+		mLightBoxId: null,
+		duration: null,
+		easing: null,
+		zIndex: null,
+		callback: function(){},
+		resizebeforeback: function(){},
+		closecallback: function(){},
+		inBoxOpacity: 1,
+		inBoxEffect: function(){this.show();}
+	},
+
+	// default z-index
+	DEFAULT_ZINDEX = 1000,
+
+	// default duration
+	DEFAULT_DURATION = 100,
+
+	// default easing type
+	DEFAULT_EASING = "swing",
+
+	// overlay element id
+	overlayId = "jquery-mLightBox-overlay"
+
+	;
+
+$.mLightBox = function(opts){
+	$.extend(options, opts);
+	$.ui.mLightBox(this, options);
+}
+
+$.ui = $.ui || {};
+
+$.ui.mLightBox = function(container, options){
+	_hideSelectBox();
+
+	var winDimension = ___getPageSize();
+
+	// overlay
+	var overlay = $("<div>")
+		.attr("id", overlayId)
+		.css({
+			position: "absolute", top: "0px", left: "0px",
+			backgroundColor: "#000000", opacity: "0",
+			width: winDimension.pageWidth + "px", height: winDimension.pageHeight + "px",
+			zIndex: options.zIndex || DEFAULT_ZINDEX
+		})
+		.click(function(){
+			close(options.closecallback);
+		})
+		.appendTo("body")
+		.animate({opacity: 0.4}, {
+			duration: options.duration || DEFAULT_DURATION,
+			easing: options.easing || DEFAULT_EASING
+		});
+
+	// mLightBox
+	var mLightBox = $(options.mLightBoxId);
+
+	animation(mLightBox, __elemOffset(mLightBox));
+
+	__winResize(overlay, mLightBox);
+}
+
+$.mLightBox.changeLayer = function(opts){
+	$(options.mLightBoxId).hide();
+	$.extend(options, opts);
+
+	// mLightBox
+	var mLightBox = $(options.mLightBoxId);
+
+	animation(mLightBox, __elemOffset(mLightBox));
+
+	__winResize($(overlayId), mLightBox);
+}
+
+$.mLightBox.close = function(fn) {
+	close(fn);
+}
+
+function close(fn){
+	// overlay
+	$("#" + overlayId)
+		.animate({
+			opacity: 0
+		}, {
+			duration: options.duration || DEFAULT_DURATION,
+			easing: options.easing || DEFAULT_EASING,
+			complete: function(){
+				_showSelectBox();
+				$(this).remove();
 		}
-		var left = Math.floor($(window).scrollLeft() + ($(window).width() - $(element).width()) / 2);
-		if ($(window).width() < $(element).width()) {
-			left = Math.floor($(window).scrollLeft());
+	});
+
+	// mLightBox
+	$(options.mLightBoxId)
+		.animate({ opacity: 0 }, {
+			duration: options.duration || DEFAULT_DURATION,
+			easing: options.easing || DEFAULT_EASING,
+			complete: function(){
+				$(this).hide();
+				(fn || function(){}).apply(this, arguments);
 		}
-		
-		return {
-			top: top,
-			left: left
-		};
+	});
+}
+
+function __winResize(overlay, mLightBox) {
+	$(window).resize(function(){
+		options.resizebeforeback();
+
+		// overlay
+		var winDimension = ___getPageSize();
+		overlay.css({width: winDimension.pageWidth + "px", height: winDimension.pageHeight + "px"});
+
+		// mLightBox
+		var offset = __elemOffset(mLightBox);
+		mLightBox.css({top: offset.top, left: offset.left});
+	});
+}
+
+// LigithBox animate!!
+function animation(element, offset) {
+	element
+		.css({
+			opacity: options.inBoxOpacity,
+			left: offset.left + "px", top: offset.top,
+			zIndex: (options.zIndex || DEFAULT_ZINDEX) + 1 });
+	options.inBoxEffect.apply(element, arguments);
+	element
+		.animate({ opacity: 1}, {
+			duration: options.duration || DEFAULT_DURATION,
+			easing: options.easing || DEFAULT_EASING,
+			complete: function(){
+				options.callback.apply(this, arguments);
+				$(this).find("input:first").focus();
+			}
+		});
+}
+
+/**
+ * getPageSize() by hisasann.com
+ *
+ */
+function ___getPageSize() {
+	// スクロール領域を含むwidth
+	var pageWidth  = 0;
+	if ($.browser.safari) {
+		pageWidth = document.body.scrollWidth;
+	} else {
+		pageWidth = document.documentElement.scrollWidth;
+	}
+
+	// スクロール領域を含むheight
+	var pageHeight = 0;
+	if ($.browser.safari) {
+		pageHeight = document.body.scrollHeight;
+	} else {
+		pageHeight = document.documentElement.scrollHeight;
+	}
+
+	// 画面に表示されている領域のwidth
+	var windowWidth = window.innerWidth || (document.documentElement && document.documentElement.clientWidth) || document.body.clientWidth;
+
+	// 画面に表示されている領域のheight
+	var windowHeight = window.innerHeight || (document.documentElement && document.documentElement.clientHeight) || document.body.clientHeight;
+
+	return {
+		pageWidth: pageWidth, pageHeight: pageHeight,
+		winWidth: windowWidth, winHeight: windowHeight
+	};
+}
+
+function __elemOffset(element) {
+
+	var top = Math.floor($(window).scrollTop() + ($(window).height() - $(element).height()) / 2);
+	if ($(window).height() < $(element).height()) {
+		top = Math.floor($(window).scrollTop());
+	}
+	var left = Math.floor($(window).scrollLeft() + ($(window).width() - $(element).width()) / 2);
+	if ($(window).width() < $(element).width()) {
+		left = Math.floor($(window).scrollLeft());
 	}
 	
-	// ie6 require
-	var display = [];
-	function _hideSelectBox() {
-		if($.browser.msie && $.browser.version == 6){
-			$("select").each(function(index, elem){
-				display[index] = $(this).css("visibility");
-				$(this).css("visibility", "hidden");
-			});
-		}
+	return {
+		top: top,
+		left: left
+	};
+}
+
+// ie6 require
+var display = [];
+function _hideSelectBox() {
+	if($.browser.msie && $.browser.version == 6){
+		$("select").each(function(index, elem){
+			display[index] = $(this).css("visibility");
+			$(this).css("visibility", "hidden");
+		});
 	}
-	
-	function _showSelectBox() {
-		if($.browser.msie && $.browser.version == 6){
-			$("select").each(function(index, elem){
-				$(this).css("visibility", display[index]);
-			});
-		}
+}
+
+function _showSelectBox() {
+	if($.browser.msie && $.browser.version == 6){
+		$("select").each(function(index, elem){
+			$(this).css("visibility", display[index]);
+		});
 	}
+}
 
 })(jQuery);
+
 (function($) {
 /*
  * makeUri
@@ -1974,6 +1973,7 @@ $.compact = function(object) {
 	
 })(jQuery);
 
+
 (function($){
 	/*
 	 * zoomPhotoPanel
@@ -2005,9 +2005,10 @@ $.compact = function(object) {
 			hoverPause = null,
 			slideCallBack = null,
 			openCallBack = null,
-			closeCallBack = null,
 			isFullScreen = null,
-			showClip = false;
+			showClip = false,
+			sendGa = false,
+			defaultScrollTop = 0;
 
 		var className = "zoomPhotoPanel";
 		
@@ -2028,9 +2029,9 @@ $.compact = function(object) {
 				hoverPause = params.hoverPause,
 				slideCallBack = params.slideCallBack,
 				openCallBack = params.openCallBack,
-				closeCallBack = params.closeCallBack,
 				isFullScreen = params.isFullScreen,
 				showClip = params.showClip,
+				sendGa = params.sendGa,
 				galabel = params.galabel;
 
 			var mynavigallery = $('.' + className);
@@ -2052,13 +2053,23 @@ $.compact = function(object) {
 					var target = $(this),
 						image = target.find('img'),
 						imageId = target.data('imageid') || '',
+						weddingId = target.data('weddingid') || '',
 						imagePath = image.attr('osrc') || image.attr('src') || '',
-						caption = image.attr('alt') || '';
+						caption = image.attr('alt') || '',
+						title = target.data('title') || '';
+
+					var originalPath = imagePath;
+					if (0 <= imagePath.indexOf('_')) {
+						originalPath = imagePath.split("_")[0] + '.jpg';
+					}
 
 					var data = {
 						imageId : imageId,
 						imagePath : imagePath,
-						caption : caption
+						originalPath : originalPath,
+						caption : caption,
+						weddingId : weddingId,
+						title : title
 					};
 
 					// テンプレートに渡すため配列に格納
@@ -2072,27 +2083,27 @@ $.compact = function(object) {
 				var template = '';
 				if (isFullScreen) {
 					template = [
-									'<div class="photo_enlargeArea portfolio display-none" style="position:absolute;background-color:transparent;">',
-										'<div class="js-photoSlider">',
+									'<div class="photo_enlargeArea portfolio display-none" >',
+										'<div class="js-photoSlider" style="overflow:hidden;margin 0 auto;">',
 											'<div class="parentKey photo_enlarge_imageArea">',
 											'<% _.each(photos, function(data, i) { %> ',
 												'<div class="childKey" style="text-align: center;">',
-														'<img src="<%=data.imagePath%>" itemprop="image" alt="<%=data.caption%>" data-imageid="<%=data.imageId%>" width="100%">',
+														'<img src="<%=data.originalPath%>" alt="<%=data.caption%>" data-imageurl="<%=data.imagePath%>" data-imageid="<%=data.imageId%>" data-weddingid="<%=data.weddingId%>" data-title="<%=data.title%>" >',
 												'</div>',
 											'<% }); %>',
 											'</div>',
 										'</div>',
-										'<div class="photo_enlarge_partsArea transitionArea" style="">',
-											'<ul class="transitionList clearfix" style="position: fixed;">',
-												'<li class="item prev js-backBtn"><a href="#" class="trigger"></a></li>',
-												'<li class="item next js-nextBtn"><a href="#" class="trigger"></a></li>',
-											'</ul>',
-											'<div class="closeArea">',
-												'<p class="closeBtn" style="position: fixed;"><a href="#" class="layerclose"><img src="' + imageUrl + '/btn_delete.png" alt="削除" width="20" height="20"></a></p>',
+										'<div class="photo_enlarge_partsArea">',
+											'<div class="transitionArea transitionList">',
+												'<p class="item prev js-backBtn"><a href="#" class="trigger"></a></p>',
+												'<p class="item next js-nextBtn"><a href="#" class="trigger"></a></p>',
 											'</div>',
-											'<div class="commentArea" style="position: fixed;">',
+											'<div class="closeArea">',
+												'<p class="closeBtn"><a href="#" class="layerclose"><img src="' + imageUrl + '/btn_delete.png" alt="削除" width="20" height="20"></a></p>',
+											'</div>',
+											'<div class="commentArea" style="position: absolute;">',
 												'<p class="comment"><span></span><a href="#" class="btnClip display-none">この画像を<br>クリップする</a></p>',
-												'<p class="count"></p>',
+												'<p class="count" style="bottom: 10px;position: absolute;width: 100%;"></p>',
 											'</div>',
 										'</div>',
 									'</div>'].join('');
@@ -2160,6 +2171,21 @@ $.compact = function(object) {
 						}).show();
 					}
 
+					// 画像上下に余白を追加する。
+					var appendMarginTop = function() {
+						// オリジナル画像に変換する。
+						slider.find('.childKey img').each(function() {
+							var photo = $(this);
+							var x = Math.floor(photo[0].height * $(window).width() / photo[0].width);
+							var margin = Math.floor(($(window).height() - x) / 2);
+							if (0 < margin) {
+								photo.closest('.childKey').css('margin-top', margin + 'px');
+							} else {
+								photo.closest('.childKey').css('margin-top', '0px');
+							}
+						});
+					}
+
 					// 画像スライダーを設定する
 					slider = panel.find('.js-photoSlider').mynavislider({
 						'parentKey': '.parentKey'
@@ -2167,6 +2193,7 @@ $.compact = function(object) {
 						, 'shift': 1
 						,'isMouseDrag': true
 						,'isFullScreen': true
+						,'heightMaxScreen': true
 						, 'backBtnKey': panel.find('.js-backBtn')
 						, 'nextBtnKey': panel.find('.js-nextBtn')
 						, 'animateType': sliderAnimateType
@@ -2177,62 +2204,44 @@ $.compact = function(object) {
 						, 'autoSlideInterval': autoSlideInterval
 						, 'hoverPause': hoverPause
 						, 'slideCallBack': function(data) {
-							
-							var targetImage = data.obj.find('img');
 
+							// 画像上下に余白を追加する。
+							appendMarginTop();
+
+							// コメントエリアの表示更新
+							var targetImage = data.obj.find('img');
 							panel.find('.commentArea .comment>span').text(targetImage.attr('alt') || '');
-							panel.find('.commentArea .count').text(data.pageNo + '枚目／' + data.maxPageNo + '枚中');
+							panel.find('.commentArea .count').text(data.pageNo + '／' + data.maxPageNo + '');
 							panel.find('.btnClip')
 								.data('imageid', targetImage.data('imageid'));
-							
+
+							// GA送信処理
+							if(sendGa){
+								var displayLi = $('#zoomPhotoPanel'+ index).find('.childKey');
+								if (1 < displayLi.length) {
+									displayLi = displayLi.filter('.childKey:eq(' + (data.pageNo) + ')' );
+								}
+								var displayImage = displayLi.find('img'),
+									imageUrl = displayImage.data('imageurl') || '',
+									weddingId = displayImage.data('weddingid'),
+									label = displayImage.data('title');
+
+								$.mynaviClickableImage(weddingId, imageUrl, label);
+							}
+
 							if (slideCallBack) {
 								slideCallBack(data);
 							}
-						}, 'resizeCallBack': imagePosition
-					});
+						}, 'resizeCallBack': function (data) {
 
-					function imagePosition() {
-						var photos = slider.find('.childKey img');
+							// 画像上下に余白を追加する。
+							appendMarginTop();
 
-						var replacePhotoArea = function(img, photo) {
-
-							var x = Math.floor(img[0].height * $(window).width() / img[0].width);
-							var margin = Math.floor(($(window).height() - x) / 2);
-							if (0 < margin) {
-								photo.closest('.childKey').css('margin-top', margin + 'px');
-							} else {
-								photo.closest('.childKey').css('margin-top', '0px');
-							}
+							panel.css('height', $(window).height() + 'px').css('width', $(window).width() + 'px');
+							$('#jquery-mLightBox-overlay').css('height', $(document).height() + 'px').css('width', $(window).width() + 'px');
 
 						}
-				
-						photos.each(function() {
-							var photo = $(this);
-							
-							var loadImage = new (function() {
-								// オリジナル画像に変換する。
-								var imagePath = photo.attr('src');
-								if (0 <= imagePath.indexOf('_')) {
-									imagePath = imagePath.split("_")[0] + '.jpg';
-								}
-								photo.attr('src', imagePath);
-								
-								var img = $('<img>');
-								img
-									.load(function() {
-										replacePhotoArea(img, photo);
-									});
-								this.exec = function() {
-									img.attr('src', imagePath);
-								}
-							})();
-							
-							loadImage.exec();
-								
-						});
-						
-					}
-					imagePosition();
+					});
 					
 				} else {
 					// 画像スライダーを設定する
@@ -2265,7 +2274,6 @@ $.compact = function(object) {
 									photo.css('max-height', height);
 									panel.find('.photoSlideViewId').css('height', height + 20);
 									
-									$.mLightBox.changeLayer();
 								}
 
 								if (slideCallBack) {
@@ -2287,7 +2295,6 @@ $.compact = function(object) {
 					});
 				}
 
-
 				// 対象画像クリック時に拡大写真パネルを表示する
 				screen.find(targetClass).each(function(i) {
 					var target = $(this),
@@ -2303,34 +2310,51 @@ $.compact = function(object) {
 				panel.find('.layerclose').click(function(e) {
 					e.preventDefault();
 					$.mLightBox.close();
-					if (closeCallBack) {
-						closeCallBack();
-					}
+				});
+			};
+
+			// 画面スクロールを有効にする
+			var onScroll = function() {
+				$(window).off('.noScroll');
+			};
+
+			// 画面スクロールを無効にする
+			var offScroll = function() {
+				$(window).on('touchmove.noScroll', function(e) {
+				    e.preventDefault();
 				});
 			};
 
 			// 指定したページを表示します。
 			var showPage = obj.showPage = function(pageNo) {
 				var pageNo = pageNo || 1;
+
+				// 初期表示時のスクロール位置を保持しておく。
+				defaultScrollTop = $(window).scrollTop();
+				
 				slider.changePage(pageNo);
-				$.mLightBox({'mLightBoxId': '#zoomPhotoPanel' + index, duration: 300,
-					opacity: 1,
+
+				var options = {'mLightBoxId': '#zoomPhotoPanel' + index, duration: 300,
 					callback: function() {
 						var page = $('.page');
 
 						// フッタを一旦消す
 						page.find('.footerNavBar').hide();
-						
+
 						if (openCallBack) {
 							openCallBack();
 						}
 					},
 					closecallback: function() {
-						if (closeCallBack) {
-							closeCallBack();
-						}
 					}
-				});
+				};
+				
+				if (isFullScreen) {
+					options.opacity = 1;
+					options.addScroll = false;
+				}
+				$.mLightBox(options);
+				
 			};
 
 			make(index);
@@ -2368,9 +2392,9 @@ $.compact = function(object) {
 		, 'hoverPause':  false // 子要素にマウスオーバーすると自動スライドを一時停止する。
 		, 'slideCallBack': null // スライド後に処理を行うコールバック(本プラグインで想定していない処理はここでカスタマイズする)
 		, 'openCallBack': null // 拡大表示後のコールバック
-		, 'closeCallBack': null // 拡大パネルを閉じた時のコールバック
-		, 'isFullScreen': false // フルスクリーンで表示する
+		,'isFullScreen': false // フルスクリーンで表示する
 		, 'showClip': false // 画像クリップ機能を表示する
+		, 'sendGa': false // 画像クリップ機能を表示する
 		, 'galabel': '' // 画像クリップ時のGAイベントラベル値
 	};
 
