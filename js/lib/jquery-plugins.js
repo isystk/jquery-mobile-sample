@@ -1009,7 +1009,7 @@ $.compact = function(object) {
 		// カルーセル
 		var doCarousel = function() {
 			// 左端
-			if (pos === 0) {
+			if (pos <= 0) {
 				pos = (li.size()/2);
 				ul.css('left', '-' + (liwidth*pos) + 'px');
 			// 右端
@@ -1039,7 +1039,7 @@ $.compact = function(object) {
 		var bindMouseDragEvent = function() {
 			var isTouch = ('ontouchstart' in window);
 
-			var dragable = (moment) ? new DragableObject(ul[0]) : null;;
+			var momentObject = (moment) ? new MomentObject(ul[0]) : null;
 			ul.bind({
 				// タッチの開始、マウスボタンを押したとき
 				'touchstart mousedown': function(e) {
@@ -1071,9 +1071,9 @@ $.compact = function(object) {
 					this.touched = true;
 
 					// 慣性を利用してスワイプする。
-					if (dragable) {
-						dragable._position = dragable._positionize();
-						dragable._dragStart(event);
+					if (moment) {
+						momentObject._position = momentObject.positionize();
+						momentObject.dragStart(event);
 					}
 
 				},
@@ -1110,12 +1110,13 @@ $.compact = function(object) {
 					// 移動先の位置を取得する
 					this.left = this.left - x;
 
-					// 画像を移動させる
-					if (dragable) {
-						dragable._dragMove(event);
-					} else {
-						$(this).css({left:this.left});
+					// 慣性を利用する場合は、移動速度を計算する
+					if (moment) {
+						momentObject.dragMove(event);
 					}
+
+					// 画像を移動させる
+					$(this).css({left:this.left});
 
 					// 位置 X,Y 座標を覚えておく
 					this.pageX = ((isTouch && event.changedTouches) ? event.changedTouches[0].pageX : e.pageX);
@@ -1127,34 +1128,75 @@ $.compact = function(object) {
 						return;
 					}
 					this.touched = false;
+
+					var self = this;
 					
 					// 残りの移動処理
-					var moveEnd = function (self) {
+					var restMove = function (movew) {
 
-						var n = Math.abs(dragw)%shiftw;
-						
-						if (dragw < 0) {
+						// スワイプ中（touchmove mousemove）で移動したページ量
+						var movePage = Math.floor(Math.abs(movew)/shiftw);
+						if (movePage != 0) {
+							if (movew < 0) {
+								movePage = movePage * -1;
+							}
+							// ページ番号
+							pageNo = pageNo + movePage;
+							if (pageNo < 1) {
+								pageNo = pageNo + maxPageNo;
+							} else if (maxPageNo < pageNo) {
+								pageNo = pageNo - maxPageNo;
+							}
+							pos = pos + (shift * movePage);
+							if (carousel) {
+								// 左端
+								if (pos <= 0) {
+									pos = (li.size()/2);
+									ul.css('left', '-' + (liwidth*pos) + 'px');
+									pageNo = 1;
+									slide(pageNo, ANIMATE_TYPE.NO);
+									return;
+								// 右端
+								} else if ((li.size()-shift - (dispCount - shift)) <= pos) {
+									var range = pos - (li.size()-shift - (dispCount - shift));
+									pos = (li.size()/2)-shift - (dispCount - shift) + range;
+									ul.css('left', '-' + (liwidth*pos) + 'px');
+									pageNo = maxPageNo;
+									slide(pageNo, ANIMATE_TYPE.NO);
+									return;
+								}
+							}
+						}
+
+						var restw = Math.abs(movew) % shiftw;
+						if (movew < 0) {
 							// 一定幅以上スワイプしていない場合は、跳ね返り処理を行う。
-							if ((n < reboundw) || (!carousel && ((pageNo <= 1 && dragw < 0) || (maxPageNo <= pageNo && 0 < dragw)))) {
-								rebound(self);
+							if ((restw < reboundw) || (!carousel && ((pageNo <= 1 && movew < 0) || (maxPageNo <= pageNo && 0 < dragw)))) {
+								var from = self.startLeft - movew;
+								var to = self.startLeft - (shiftw * movePage);
+								rebound(from, to);
 							} else {
-								var p = pageNo - Math.ceil(Math.abs(dragw)/shiftw);
+								var p = pageNo - 1;
 								if (!carousel && p <= 1) {
 									p = 1;
 								}
 								// 前ページ
+								dragw = movew - (shiftw * movePage);
 								slide(p, ANIMATE_TYPE.SLIDE);
 							}
-						} else if (0 < dragw) {
+						} else if (0 < movew) {
 							// 一定幅以上スワイプしていない場合は、跳ね返り処理を行う。
-							if ((n < reboundw) || (!carousel && ((pageNo <= 1 && dragw < 0) || (maxPageNo <= pageNo && 0 < dragw)))) {
-								rebound(self);
+							if ((restw < reboundw) || (!carousel && ((pageNo <= 1 && movew < 0) || (maxPageNo <= pageNo && 0 < dragw)))) {
+								var from = self.startLeft - movew;
+								var to = self.startLeft - (shiftw * movePage);
+								rebound(from, to);
 							} else {
-								var p = pageNo + Math.ceil(Math.abs(dragw)/shiftw);
+								var p = pageNo + 1;
 								if (!carousel && maxPageNo <= p) {
 									p = maxPageNo;
 								}
 								// 次ページ
+								dragw = movew - (shiftw * movePage);
 								slide(p, ANIMATE_TYPE.SLIDE);
 							}
 						} else {
@@ -1164,10 +1206,7 @@ $.compact = function(object) {
 					}
 
 					// リバウンド処理
-					var rebound = function(self) {
-						var from = self.startLeft - dragw;
-						var to = self.startLeft;
-						
+					var rebound = function(from, to) {
 						var elem = ul[0];
 						var begin = +new Date();
 						var duration = slideSpeed;
@@ -1182,8 +1221,7 @@ $.compact = function(object) {
 								_now = to;
 								elem.style.left = _now + 'px';
 
-								nowLoading = false;
-								dragw = 0;
+								slide(pageNo, ANIMATE_TYPE.NO);
 							}
 							else {
 								_pos = easing(time, duration);
@@ -1193,24 +1231,16 @@ $.compact = function(object) {
 						}, 10);
 					}
 
-					var self = this;
-					if (dragable) {
-						dragable._dragEnd(event);
-					    dragable.onstop = function (obj) {
+					if (moment) {
+						momentObject.dragEnd(event);
+						momentObject.onstop = function (obj) {
 					    	// 慣性で動いた分を加算する
-							dragw = self.startLeft - self.left + obj.momentw;
-							moveEnd(self);
+							var movew = self.startLeft - self.left + obj.momentw;
+							restMove(movew);
 					    }
 					} else {
-				    	// 慣性で動いた分を加算する
-						dragw = self.startLeft - self.left;
-
-						// スワイプした場合は、その他のイベントを停止する。
-						if (dragw !== 0) {
-							event.stopImmediatePropagation();
-						}
-
-						moveEnd(self);
+						var movew = self.startLeft - self.left;
+						restMove(movew);
 					}
 				    
 				}
@@ -1369,6 +1399,200 @@ $.compact = function(object) {
 				slideCallBackFunc(data);
 			}
 		};
+		
+
+		// 慣性を利用してスライドする
+		var MomentObject = function (element) {
+			this.element = element;
+			this._position = this.positionize();
+			this.reset();
+		}
+		MomentObject.prototype = {
+			constructor: MomentObject,
+			damping : 15,
+			_isDragging: false,
+			__position : Vector2.zero,
+			_velocity : Vector2.zero,
+			_prevTime : 0,
+			_prevPosition: Vector2.zero,
+			_prevVelocity: Vector2.zero,
+			_loopTimer: null,
+
+			positionize: function () {
+				var rect = this.element.getBoundingClientRect();
+				var x = rect.left;
+				var y = rect.top;
+				return new Vector2(x, y);
+			},
+
+			positionizeByEvent: function (e) {
+				var isTouch = ('ontouchstart' in window);
+				var x = (isTouch && event.changedTouches) ? event.changedTouches[0].pageX : e.pageX;
+				var y = (isTouch && event.changedTouches) ? event.changedTouches[0].pageY : e.pageY;
+				return new Vector2(x, y);
+			},
+			dragStart: function (evt) {
+				this.reset();
+				this._prevTime	 = Date.now();
+				this._prevPosition = this.positionizeByEvent(evt);
+				this._isDragging   = true;
+			},
+			dragMove: function (evt) {
+				if (!this._isDragging) {
+					return;
+				}
+
+				var now = Date.now();
+				var deltaTime = now - this._prevTime;
+				var eventPos = this.positionizeByEvent(evt);
+				var deltaPosition = Vector2.sub(eventPos, this._prevPosition);
+				var velocity = Vector2.divisionScalar(deltaPosition, (deltaTime || (deltaTime = 1)));
+				var deltaVelocity = Vector2.sub(velocity, this._prevVelocity);
+
+				this._velocity.add(deltaVelocity);
+				this._position = Vector2.add(this._position, deltaPosition);
+
+				this._prevTime = now;
+				this._prevPosition = eventPos;
+				this._prevVelocity = velocity;
+			},
+			dragEnd: function (evt) {
+				this._isDragging = false;
+				this.dragRelease();
+			},
+			dragRelease: function () {
+				var _this = this;
+				var zero = Vector2.zero;
+				var past = Date.now();
+				
+				var startLeft = _this._position.x;
+				
+				(function loop() {
+					_this.dampingVelocity();
+					var now   = Date.now();
+					var delta = now - past;
+					_this._position = Vector2.add(_this._position, Vector2.multiplyScalar(_this._velocity, delta));
+					
+					// 画像を移動させる
+					$(_this.element).css({left:_this._position.x});
+
+					var isFirst = false;
+					if (0 <= _this._position.x) {
+						isFirst = true;
+					}
+					var isLast = false;
+					if (_this._position.x <= (-1 * (maxPageNo * (carousel ? 2 : 1) * shiftw) + shiftw)) {
+						isLast = true;
+					}
+					// 先頭に到達、最後に到達、慣性での動作が停止 の何れかの場合
+					if (isFirst || isLast || _this._velocity.equal(zero)) {
+						_this.reset();
+
+						// 慣性の移動量
+						var obj = {
+								momentw : startLeft - _this._position.x
+						};
+						
+						_this.stop(obj);
+						return;
+					}
+
+					past = now;
+					_this._loopTimer = setTimeout(loop, 16);
+				}());
+			},
+			dampingVelocity: function () {
+				var damping = Vector2.divisionScalar(this._velocity, this.damping);
+				this._velocity.sub(damping);
+				if (this._velocity.lessThen(0.05)) {
+					this._velocity = Vector2.zero;
+				}
+			},
+			reset: function () {
+				clearTimeout(this._loopTimer);
+				this._velocity = Vector2.zero;
+				this._prevVelocity = Vector2.zero;
+				this._prevPosition = Vector2.zero;
+			},
+			
+			stop: function (obj) {
+				this.onstop && this.onstop(obj);
+			}
+		};
+
+		/**
+		 * Vector2
+		 *
+		 * @param {number} x
+		 * @param {number} y
+		 */
+		function Vector2(x, y) {
+			this.x = x;
+			this.y = y;
+		}
+		Object.defineProperties(Vector2, {
+			'zero': {
+				enumerable: true,
+				set: function (val) {},
+				get: function () { return new Vector2(0, 0); }
+			}
+		});
+		Vector2.prototype = {
+			constructor: Vector2,
+
+			add: function (vec) {
+				this.x += vec.x;
+				this.y += vec.y;
+				return this;
+			},
+			sub: function (vec) {
+				this.x -= vec.x;
+				this.y -= vec.y;
+				return this;
+			},
+			multiplyScalar: function (val) {
+				this.x *= val;
+				this.y *= val;
+				return this;
+			},
+			divisionScalar: function (val) {
+				this.x /= val;
+				this.y /= val;
+				return this;
+			},
+			length: function () {
+				return Math.sqrt((this.x * this.x) + (this.y * this.y));
+			},
+			lessThen: function (val) {
+				return (this.length() <= val);
+			},
+			equal: function (vec) {
+				return (this.x === vec.x && this.y === vec.y);
+			},
+			copy: function () {
+				return new Vector2(this.x, this.y);
+			}
+		};
+		Vector2.add = function (vec1, vec2) {
+			var x = vec1.x + vec2.x;
+			var y = vec1.y + vec2.y;
+			return new Vector2(x, y);
+		};
+		Vector2.sub = function (vec1, vec2) {
+			var x = vec1.x - vec2.x;
+			var y = vec1.y - vec2.y;
+			return new Vector2(x, y);
+		};
+		Vector2.multiplyScalar = function (vec, val) {
+			var x = vec.x * val;
+			var y = vec.y * val;
+			return new Vector2(x, y);
+		};
+		Vector2.divisionScalar = function (vec, val) {
+			var x = vec.x / val;
+			var y = vec.y / val;
+			return new Vector2(x, y);
+		};
 
 		/* Public  */
 
@@ -1456,241 +1680,7 @@ $.compact = function(object) {
 		,	'resizeCallBack': null // 画面リサイズ後に処理を行うコールバック
 	};
 
-	(function () {
-		'use strict';
-
-		/**
-		 * Vector2
-		 *
-		 * @param {number} x
-		 * @param {number} y
-		 */
-		function Vector2(x, y) {
-			this.x = x;
-			this.y = y;
-		}
-
-		Object.defineProperties(Vector2, {
-			'zero': {
-				enumerable: true,
-				set: function (val) {},
-				get: function () { return new Vector2(0, 0); }
-			}
-		});
-		
-		Vector2.prototype = {
-			constructor: Vector2,
-
-			add: function (vec) {
-				this.x += vec.x;
-				this.y += vec.y;
-				return this;
-			},
-			sub: function (vec) {
-				this.x -= vec.x;
-				this.y -= vec.y;
-				return this;
-			},
-			multiplyScalar: function (val) {
-				this.x *= val;
-				this.y *= val;
-				return this;
-			},
-			divisionScalar: function (val) {
-				this.x /= val;
-				this.y /= val;
-				return this;
-			},
-			length: function () {
-				return Math.sqrt((this.x * this.x) + (this.y * this.y));
-			},
-			lessThen: function (val) {
-				return (this.length() <= val);
-			},
-			equal: function (vec) {
-				return (this.x === vec.x && this.y === vec.y);
-			},
-			copy: function () {
-				return new Vector2(this.x, this.y);
-			}
-		};
-
-		Vector2.add = function (vec1, vec2) {
-			var x = vec1.x + vec2.x;
-			var y = vec1.y + vec2.y;
-			return new Vector2(x, y);
-		};
-		Vector2.sub = function (vec1, vec2) {
-			var x = vec1.x - vec2.x;
-			var y = vec1.y - vec2.y;
-			return new Vector2(x, y);
-		};
-		Vector2.multiplyScalar = function (vec, val) {
-			var x = vec.x * val;
-			var y = vec.y * val;
-			return new Vector2(x, y);
-		};
-		Vector2.divisionScalar = function (vec, val) {
-			var x = vec.x / val;
-			var y = vec.y / val;
-			return new Vector2(x, y);
-		};
-
-		/**
-		 * DragableObject
-		 *
-		 * @param {HTMLElement} element
-		 */
-		function DragableObject(element) {
-			this.element = element;
-			this._init();
-		}
-		DragableObject.prototype = {
-			constructor: DragableObject,
-
-			damping	 : 10,
-
-			_isDragging: false,
-
-			__position	: Vector2.zero,
-			_velocity	 : Vector2.zero,
-
-			_prevTime	: 0,
-			_prevPosition: Vector2.zero,
-			_prevVelocity: Vector2.zero,
-
-			_loopTimer: null,
-
-			_definePropertices: function () {
-				Object.defineProperties(this, {
-					'position' : {
-						enumerable: true,
-						set: function (pos) {
-							this._position = pos;
-						},
-						get: function () {
-							return this._position;
-						}
-					},
-					'_position': {
-						enumerable: false,
-						set: function (pos) {
-							this.__position = pos;
-							this.element.style.left = pos.x + 'px';
-//							this.element.style.top  = pos.y + 'px';
-						},
-						get: function () {
-							return this.__position;
-						}
-					}
-				});
-			},
-
-			_init: function () {
-				this._definePropertices();
-				this._position = this._positionize();
-				this._reset();
-			},
-				
-			_positionize: function () {
-				var rect = this.element.getBoundingClientRect();
-				var x = rect.left;
-				var y = rect.top;
-				return new Vector2(x, y);
-			},
-
-			_positionizeByEvent: function (evt) {
-				var isTouchs = !!evt.touches;
-				var x = isTouchs ? evt.touches[0].pageX : evt.pageX;
-				var y = isTouchs ? evt.touches[0].pageY : evt.pageY;
-				return new Vector2(x, y);
-			},
-			_dragStart: function (evt) {
-				this._reset();
-				this._prevTime	 = Date.now();
-				this._prevPosition = this._positionizeByEvent(evt);
-				this._isDragging   = true;
-			},
-			_dragMove: function (evt) {
-				if (!this._isDragging) {
-					return;
-				}
-
-				var now		   = Date.now();
-				var deltaTime	 = now - this._prevTime;
-				var eventPos	  = this._positionizeByEvent(evt);
-				var deltaPosition = Vector2.sub(eventPos, this._prevPosition);
-				var velocity	  = Vector2.divisionScalar(deltaPosition, (deltaTime || (deltaTime = 1)));
-				var deltaVelocity = Vector2.sub(velocity, this._prevVelocity);
-
-				this._velocity.add(deltaVelocity);
-				this._position = Vector2.add(this._position, deltaPosition);
-
-				this._prevTime	 = now;
-				this._prevPosition = eventPos;
-				this._prevVelocity = velocity;
-			},
-			_dragEnd: function (evt) {
-				this._isDragging = false;
-				this._dragRelease();
-			},
-			_dragRelease: function () {
-				var _this = this;
-				var zero = Vector2.zero;
-				var past = Date.now();
-				
-				var startLeft = _this._position.x;
-				
-				(function loop() {
-					_this._dampingVelocity();
-					var now   = Date.now();
-					var delta = now - past;
-					_this._position = Vector2.add(_this._position, Vector2.multiplyScalar(_this._velocity, delta));
-					if (_this._velocity.equal(zero)) {
-						_this._reset();
-
-						// 慣性の移動量
-						var obj = {
-								momentw : startLeft - _this._position.x
-						};
-						_this._stop(obj);
-						return;
-					}
-
-					past = now;
-					_this._loopTimer = setTimeout(loop, 16);
-				}());
-			},
-			_dampingVelocity: function () {
-				var damping = Vector2.divisionScalar(this._velocity, this.damping);
-				this._velocity.sub(damping);
-				if (this._velocity.lessThen(0.01)) {
-					this._velocity = Vector2.zero;
-				}
-			},
-
-			reset: function () {
-				this._reset();
-			},
-
-			_reset: function () {
-				clearTimeout(this._loopTimer);
-				this._velocity	  = Vector2.zero;
-				this._prevVelocity  = Vector2.zero;
-				this._prevPosition  = Vector2.zero;
-			},
-			
-			_stop: function (obj) {
-				this.onstop && this.onstop(obj);
-			}
-		};
-
-		window.DragableObject = DragableObject;
-		window.Vector2 = Vector2;
-	}());
-
 })(jQuery);
-
 
 /*
  * slideMenu
@@ -2200,6 +2190,7 @@ $.compact = function(object) {
 						, 'slideSpeed': slideSpeed
 						, 'easing': easing
 						, 'carousel': carousel
+						, 'moment': true
 						, 'autoSlide': autoSlide
 						, 'autoSlideInterval': autoSlideInterval
 						, 'hoverPause': hoverPause
