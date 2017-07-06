@@ -740,7 +740,8 @@ $.compact = function(object) {
 			,	reboundw = null
 			,	moment = false
 			,	isFullScreen = false
-			,	heightMaxScreen = false;
+			,	heightMaxScreen = false
+			,	diffMoveMode = false; // 通常はページ番号の差分で移動距離を算出しますが、このモードがtrueの場合は間の子要素の数で移動距離を算出します。
 
 		var params = $.extend({}, $.fn.mynavislider.defaults, options);
 
@@ -768,6 +769,10 @@ $.compact = function(object) {
 			heightMaxScreen = params.heightMaxScreen;
 			slideCallBackFunc = params.slideCallBack;
 			resizeCallBackFunc = params.resizeCallBack;
+
+			ul.find(childKey).each(function(i) {
+				$(this).attr('pageno', (i+1));
+			});
 
 			if (heightMaxScreen) {
 				// 画像縦幅を端末サイズに合わせる為オリジナル画像サイズが必要になる。画像を事前にロードしておく。
@@ -816,6 +821,22 @@ $.compact = function(object) {
 					isMouseDrag = false;
 				}
 
+				if (carousel) {
+					// カルーセルの初期設定を行う
+					initCarousel();
+					pos = li.size()/2;
+				} else {
+					// ページングボタンの表示制御
+					showArrows();
+					pos = shift;
+				}
+
+				// ulタグの横幅を調整する
+				ul.css('width', shiftw * li.size() / shift)
+					.css('position', 'relative');
+
+				li.css('float', 'left');
+
 				// 各種イベントの設定
 				bindEvent();
 				
@@ -839,22 +860,6 @@ $.compact = function(object) {
 
 		// 各種イベントの設定
 		var bindEvent = function() {
-
-			if (carousel) {
-				// カルーセルの初期設定を行う
-				initCarousel();
-				pos = li.size()/2;
-			} else {
-				// ページングボタンの表示制御
-				showArrows();
-				pos = shift;
-			}
-
-			// ulタグの横幅を調整する
-			ul.css('width', shiftw * li.size() / shift)
-				.css('position', 'relative');
-
-			li.css('float', 'left');
 
 			// スワイプでのページングを可能にする
 			if (isMouseDrag) {
@@ -907,11 +912,19 @@ $.compact = function(object) {
 			pos = pos + (shift * move);
 
 			// ページ番号を設定
-			pageNo = pageNo + move;
-			if (pageNo < 1) {
-				pageNo = pageNo + maxPageNo;
-			} else if (maxPageNo < pageNo) {
-				pageNo = pageNo - maxPageNo;
+			if (diffMoveMode) {
+				if (carousel) {
+					pageNo = parseInt($(li[pos]).attr('pageno'));
+				} else {
+					pageNo = parseInt($(li[(pos-shift)]).attr('pageno'));
+				}
+			} else {
+				pageNo = pageNo + move;
+				if (pageNo < 1) {
+					pageNo = pageNo + maxPageNo;
+				} else if (maxPageNo < pageNo) {
+					pageNo = pageNo - maxPageNo;
+				}
 			}
 
 			// ページングボタンの表示制御
@@ -1303,24 +1316,8 @@ $.compact = function(object) {
 
 		// 子要素をフルスクリーンで表示します。
 		var fullScreen = function() {
-			// スライダーで設定した変更を元に戻します。
-			var unbindSlider = function() {
-				// オートスライドのマイマーをリセット
-				if (autoSlide) {
-					autoSlide.stop();
-				}
-				// クリック時のバインドをリセット
-				back.unbind();
-				next.unbind();
-				// スワイプのイベントをリセット
-				ul.unbind();
-				// ローテート用の番兵を削除
-				ul.find(childKey + '.cloned').remove();
-				// liを再キャッシュ
-				li = ul.find(childKey);
-			};
-			// スライダーを生成し直します。
-			var createSlider = function() {
+			// スライダーの表示幅を調整します。
+			var changeDisplay = function() {
 				
 				// 子要素の横幅を端末のwidthに設定
 				ul.find(childKey).width(Math.ceil($(window).width() /dispCount) - Math.ceil(margin/dispCount));
@@ -1344,7 +1341,10 @@ $.compact = function(object) {
 				
 				liwidth = ul.find(childKey).width();
 				shiftw = (liwidth + margin) * shift;
+				ul.css('width', shiftw * li.size() / shift);
 
+				pos = li.size()/2;
+				ul.css('left', '-' + (liwidth*(li.size())) + 'px');
 			};
 			var resizeCallBack = function() {
 				if (resizeCallBackFunc) {
@@ -1361,9 +1361,7 @@ $.compact = function(object) {
 			};
 			// 画面が回転された場合
 			$(this).on('orientationchange',function(){
-				unbindSlider();
-				createSlider();
-				bindEvent();
+				changeDisplay();
 
 				// リサイズ時は、コールバックは呼ばない。
 				var workPageNo = pageNo;
@@ -1377,9 +1375,7 @@ $.compact = function(object) {
 			});
 			// 画面がリサイズされた場合
 			$(this).resize(function() {
-				unbindSlider();
-				createSlider();
-				bindEvent();
+				changeDisplay();
 
 				// リサイズ時は、コールバックは呼ばない。
 				var workPageNo = pageNo;
@@ -1391,7 +1387,7 @@ $.compact = function(object) {
 
 				resizeCallBack();
 			});
-			createSlider();
+			changeDisplay();
 		};
 
 		// コールバック
@@ -1641,36 +1637,71 @@ $.compact = function(object) {
 				autoSlide.restart();
 			}
 			// 移動するページ量
-			var move = page - pageNo;
-			if (Math.abs(page + (maxPageNo-pageNo)) < Math.abs(move)) {
-				move = page + (maxPageNo-pageNo);
+			var move = 0;
+			if (diffMoveMode) {
+				if (page !== pageNo) {
+					var moveR = (ul.find(params.childKey+'[pageno="'+pageNo+'"]:eq(0)').nextUntil(ul.find(params.childKey+'[pageno="'+page+'"]:eq(0)')).length+1);
+					var moveL = -1 * (ul.find(params.childKey+'[pageno="'+page+'"]:eq(0)').nextUntil(ul.find(params.childKey+'[pageno="'+pageNo+'"]:eq(0)')).length+1);
+					if (Math.abs(moveR) < Math.abs(moveL)) {
+						move = moveR;
+					} else {
+						move = moveL;
+					}
+				}
+			} else {
+				move = page - pageNo;
 			}
 			slide(move, animateType);
 		}
 
 		// 最大ページなどの情報をリフレッシュする。（スライドコールバックで次ページ要素をAjax取得してLIに追加した場合などはこれを利用してページ情報を最新化する）
 		// 引数：現在ページ、最大ページ、現在ページの左に追加した要素数
-		var refresh = this.refresh = function (page, _maxPageNo, leftAddCnt) {
-			// LIをリキャッシュ
+		var refresh = this.refresh = function (page, max, leftAddCnt) {
+			// 子要素をリキャッシュ
 			li = ul.find(params.childKey);
+			if (li.size() === 1) {
+				// スライド幅＝子要素横幅✕１ページに表示する子要素の数
+				liwidth = li.width();
+				shiftw = liwidth * shift;
+			}
+			// 親要素のwidthを再計算
 			ul.width(ul.width()+(li.size() * liwidth) + 'px');
 			if (carousel) {
-				maxPageNo = parseInt(_maxPageNo) || Math.ceil(li.size()/2/shift);
-
-				pos = pos + leftAddCnt;
-				ul.css('left', '-' + (pos * liwidth) + 'px');
-
-				// リサイズ時は、コールバックは呼ばない。
-				var workSlideCallBackFunc = slideCallBackFunc;
-				slideCallBackFunc = null;
-				changePage(page);
-				slideCallBackFunc = workSlideCallBackFunc;
-
+				diffMoveMode = true;
+				if (max) {
+					maxPageNo = parseInt(max);
+				} else{
+					maxPageNo = Math.ceil(li.size()/2/shift);
+				}
+				if (leftAddCnt) {
+					pos = pos + leftAddCnt;
+					ul.css('left', '-' + (pos * liwidth) + 'px');
+				}
+				if (page) {
+					// コールバックは一次的に呼ばない。
+					var workSlideCallBackFunc = slideCallBackFunc;
+					slideCallBackFunc = null;
+					changePage(page);
+					slideCallBackFunc = workSlideCallBackFunc;
+				}
 			} else {
-				maxPageNo = parseInt(_maxPageNo) || Math.ceil(li.size()/shift);
+				if (max) {
+					maxPageNo = parseInt(max);
+				} else{
+					maxPageNo = Math.ceil(li.size()/shift);
+				}
 				showArrows();
 			}
 		};
+
+		// ボタンクリックやスワイプ時の処理を一次的に停止/開始する。
+		var suspend = this.suspend = function(suspendFlg) {
+			if (!suspendFlg) {
+				nowLoading = false;
+			} else {
+				nowLoading = true;
+			}
+		}
 
 		// 処理開始
 		$(this).each(function() {
