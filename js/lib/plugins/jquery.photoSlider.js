@@ -657,8 +657,10 @@
 				shiftw = (liwidth + margin) * shift;
 				ul.css('width', shiftw * li.size() / shift);
 
-				pos = li.size()/2;
-				ul.css('left', '-' + (liwidth*(li.size())) + 'px');
+				if (carousel) {
+					pos = li.size()/2;
+					ul.css('left', '-' + (liwidth*(li.size())) + 'px');
+				}
 			};
 			var resizeCallBack = function() {
 				if (resizeCallBackFunc) {
